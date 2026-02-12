@@ -72,7 +72,7 @@ public class turretAligning extends OpMode {
         }
         redSide = alliance == MainV1E.Alliance.RED;
         turretSS.setRedSide(redSide);
-        telemetryM.addLine("BLITZ Team 14212!");
+        telemetryM.addLine("PHANTOM Team 14212!");
         telemetryM.addLine(true, "INIT DONE!");
         telemetryM.addData(true, "Alliance", alliance);
         telemetryM.addData(true, "Starting pos", startPos);

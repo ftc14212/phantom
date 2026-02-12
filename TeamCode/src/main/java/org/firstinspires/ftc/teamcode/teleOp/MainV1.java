@@ -414,7 +414,7 @@ public class MainV1 extends OpMode {
         lut.add(135, 0.4);
         // finish
         lut.createLUT();
-        return lut.get(Math.max(15.1, Math.min(124.9, distShooter)));
+        return lut.get(Math.max(15.1, Math.min(134.9, distShooter)));
     }
     public double alignTurret(double x, double y, double headingDeg, Pose target) {
         double dx = target.getX() - x;

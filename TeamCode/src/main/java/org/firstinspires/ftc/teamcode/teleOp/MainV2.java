@@ -160,6 +160,7 @@ public class MainV2 extends OpMode {
         strips = new CachingServo(hardwareMap.get(Servo.class, "strips")); // 4x gobilda strip RGB lights
         stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
         // limits
+        hood.scaleRange(0, 0.38);
         pivot.scaleRange(0, 0.4);
         // turn on motor
         shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

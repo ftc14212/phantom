@@ -23,8 +23,8 @@ public class PIDTuneShooterSdk extends OpMode {
     public static double P = 100;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 20;
-    public static double TARGET = 0;
+    public static double F = 12;
+    public static double TARGET = 0; // 3100 max
     TelemetryM telemetryM;
     /**
      * Initialization code.
@@ -37,7 +37,7 @@ public class PIDTuneShooterSdk extends OpMode {
         shooterR = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterR"));
         shooterL = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterL"));
         // reverse motor
-        shooterL.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterR.setDirection(DcMotorSimple.Direction.REVERSE);
         // turn on the motors without the built in controller
         shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooterL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

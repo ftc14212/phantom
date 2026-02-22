@@ -94,9 +94,6 @@ public class auton extends OpMode {
     public double turretCpos;
     public static double turretOffset = -10;
     public static boolean turretOn = true;
-    public static double gateX = 11;
-    public static double gateY = 60;
-    public static double gateR = 145;
     public static boolean skipToGate = false;
     DigitalChannel beams;
     private final Prompter prompter = new Prompter(this);
@@ -115,7 +112,7 @@ public class auton extends OpMode {
     public static final Pose intakeMidControlPoseBC = new Pose(62, 52, Math.toRadians(180));
     public static final Pose intakeFarPoseBC = new Pose(14.5, 34, Math.toRadians(180));
     public static final Pose intakeFarControlPoseBC = new Pose(72, 24.6, Math.toRadians(180));
-    public static final Pose intakeGatePoseBC = new Pose(gateX, gateY, Math.toRadians(gateR));
+    public static final Pose intakeGatePoseBC = new Pose(11, 60, Math.toRadians(145));
     public static final Pose intakeGateControlPoseBC = new Pose(51, 60, Math.toRadians(0));
     public static final Pose parkPoseBC = new Pose(26, 69.6, Math.toRadians(-90));
     // red close
@@ -127,7 +124,7 @@ public class auton extends OpMode {
     public static final Pose intakeMidControlPoseRC = intakeMidControlPoseBC.mirror();
     public static final Pose intakeFarPoseRC = intakeFarPoseBC.mirror();
     public static final Pose intakeFarControlPoseRC = intakeFarControlPoseBC.mirror();
-    public static final Pose intakeGatePoseRC = new Pose(144 - gateX, gateY, Math.toRadians(35));
+    public static final Pose intakeGatePoseRC = new Pose(133, 58, Math.toRadians(40));
     public static final Pose intakeGateControlPoseRC = intakeGateControlPoseBC.mirror();
     public static final Pose parkPoseRC = parkPoseBC.mirror();
     // far
@@ -173,7 +170,7 @@ public class auton extends OpMode {
     boolean intakedFar = false;
     boolean intakedGate = false;
     boolean shoot = false;
-    boolean shotFirst = false;
+    boolean shotFirst = true;
     /* preload lines far */
     boolean intake1Started = false;
     boolean shootFar1Started = false;
@@ -187,6 +184,7 @@ public class auton extends OpMode {
     // idk
     boolean reached = false;
     boolean shootFar = false;
+    boolean reached2 = false;
     public void buildPaths() {
         if (startPos == MainV1E.StartPos.CLOSE) {
             if (alliance == MainV1E.Alliance.BLUE) buildBlueClose();
@@ -469,6 +467,7 @@ public class auton extends OpMode {
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(startPoseBC);
         }
         redSide = alliance == MainV1E.Alliance.RED;
+        intakedGate = redSide;
         MainV1.redSide = alliance == MainV1E.Alliance.RED;
         buildPaths();
         telemetryM.addLine("BLITZ Team 14212!");
@@ -488,7 +487,9 @@ public class auton extends OpMode {
                     follower.followPath(scoreClose, true);
                     shootCloseStarted = true;
                 }
-                if (!follower.isBusy() && shootCloseStarted) {
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(shootClosePoseRC, 2, 2)) reached2 = true;
+                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(shootClosePoseBC, 2, 2)) reached2 = true;
+                if (reached2 && shootCloseStarted) {
                     if (shooterR.getVelocity() >= shooterVelo) {
                         if (!ran) {
                             timer.reset();
@@ -519,6 +520,7 @@ public class auton extends OpMode {
                 break;
             case 1:
                 if (!intakeCloseStarted) {
+                    reached2 = false;
                     speed = 1;
                     INTAKE();
                     follower.followPath(intakeClose, true);
@@ -526,7 +528,7 @@ public class auton extends OpMode {
                     intakedClose = true;
                     intakeCloseStarted = true;
                 }
-                if (alliance == MainV1E.Alliance.RED && follower.atPose(intakeClosePoseRC, 2, 2)) reached = true;
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(intakeClosePoseRC, 5, 5)) reached = true;
                 if (alliance == MainV1E.Alliance.BLUE && follower.atPose(intakeClosePoseBC, 2, 2)) reached = true;
                 if (reached) {
                     if (!ran2) {
@@ -544,7 +546,7 @@ public class auton extends OpMode {
                 break;
             case 2:
                 if (!intakeMidStarted) {
-                    speed = 1;
+                    reached2 = false;
                     indexerCpos = 1;
                     INTAKE();
                     follower.followPath(intakeMid, true);
@@ -568,6 +570,7 @@ public class auton extends OpMode {
                 break;
             case 3:
                 if (!intakeFarStarted) {
+                    reached2 = false;
                     speed = 1;
                     INTAKE();
                     follower.followPath(intakeFar, true);
@@ -575,7 +578,7 @@ public class auton extends OpMode {
                     intakedFar = true;
                     intakeFarStarted = true;
                 }
-                if (alliance == MainV1E.Alliance.RED && follower.atPose(intakeFarPoseRC, 2, 2)) reached = true;
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(intakeFarPoseRC, 5, 5)) reached = true;
                 if (alliance == MainV1E.Alliance.BLUE && follower.atPose(intakeFarPoseBC, 2, 2)) reached = true;
                 if (reached) {
                     if (!ran2) {
@@ -593,6 +596,7 @@ public class auton extends OpMode {
                 break;
             case 4:
                 if (!intakeGateStarted) {
+                    reached2 = false;
                     speed = 1;
                     indexerCpos = 1;
                     INTAKE();
@@ -1038,6 +1042,9 @@ public class auton extends OpMode {
         MainV1E.lastAutoPos = follower.getPose();
         // telemetry
         telemetryM.addLine("Blitz Team 14212!");
+        telemetryM.addData(true, "reached",reached);
+        telemetryM.addData(true, "reached2",reached2);
+        telemetryM.addData(true, "shooter velo",shooterR.getVelocity());
         telemetryM.addData(true, "loop times", loopTime);
         telemetryM.addData(true, "reached", reached);
         telemetryM.addData(true, "pivot", pivot.getPosition());

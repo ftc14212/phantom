@@ -56,7 +56,7 @@ public class ShooterSS extends SubsystemBase {
     // random okay leave me alone :C
     // --------------------------------
     boolean redSide = false;
-    boolean shooterOn = true;
+    boolean shooterOn = false;
     double sLutMin = 0;
     double sLutMax = 0;
     double hLutMin = 0;
@@ -106,8 +106,8 @@ public class ShooterSS extends SubsystemBase {
         return shooterVeloLut.get(Math.max(sLutMin + 0.1, Math.min(sLutMax - 0.1, distShooter)));
     }
     public double getHoodLut(double distShooter) {
-        return shooterVeloLut.get(Math.max(hLutMin + 0.1, Math.min(hLutMax - 0.1, distShooter)));
-    }
+        return hoodLut.get(Math.max(hLutMin + 0.1, Math.min(hLutMax - 0.1, distShooter)));
+    }//update the axon no no worky
     // -------------------------------------------------------------
     // METHODSSSS
     // -------------------------------------------------------------
@@ -140,7 +140,7 @@ public class ShooterSS extends SubsystemBase {
         this.hoodLut = hoodLut;
         this.sLutMin = sLutMin;
         this.sLutMax = sLutMax;
-        this.hLutMin = hLutMin;
+        this.hLutMin = hLutMin;//ur not the meta david ur a loswrt
         this.hLutMax = hLutMax;
     }
     public void shooterOn(boolean shooterOn) {

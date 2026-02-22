@@ -183,6 +183,7 @@ public class TurretSS extends SubsystemBase {
                 "Align Turret output: " + wrap(alignTurret(follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getHeading()), target)) + "\n" +
                 "Offset: " + offset + "\n" +
                 "Turret On: " + turretOn + "\n" +
+                "Turret raw Power" + (turret == null ? turretC.getPower() : turret.getPower()) + "\n" +
                 "-- Poses --\n" +
                 "Follower:" + "\n" +
                 "X: " + follower.getPose().getX() + "\n" +

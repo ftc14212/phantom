@@ -51,7 +51,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 public class MainV2 extends OpMode {
     /**
      * MAIN V2 BY DAVID
-     * @author David Grieas - 14212 MetroBotics
+     * @author David Grieas, Iza Sikorski - 14212 MetroBotics
     **/
     // positions
     public static double pivotCpos = 0.45;
@@ -61,22 +61,22 @@ public class MainV2 extends OpMode {
     public static double ledCpos = 0.611;
     public static double stripsCpos = 0.611;
     public static double turretTpos = 0;
-    public static double shooterVelo = 0;
+    public static double shooterVelo = 0;// update servos r kissing
     public double turretCpos;
     // misc
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
-    boolean indexerOn = true;
+    boolean indexerOn = true;// rest in peace my grammy she got hit by a bazzoka
     // timers
     ElapsedTime loopTime;
     // odometry
     public static boolean odoDrive = true;
     // config stuff
-    public static boolean redSide = false;
+    public static boolean redSide = false;// i think about her everytime I hit the kookah
     public static boolean debugMode = true;
-    public static double turretOffset = 0;
-    public static double backSpin = 0;
-    public static double shooterOffset = -18;
+    public static double turretOffset = 0;// kabam
+    public static double backSpin = 0;// kaboom
+    public static double shooterOffset = -18;// kachow
     private final Prompter prompter = new Prompter(this);
     // hardware
     private TelemetryM telemetryM;
@@ -132,7 +132,7 @@ public class MainV2 extends OpMode {
         // gamepads
         currentGamepad1 = new Gamepad();
         currentGamepad2 = new Gamepad();
-        previousGamepad1 = new Gamepad();
+        previousGamepad1 = new Gamepad();//im hingry
         previousGamepad2 = new Gamepad();
         // motors
         leftFront = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftFront")); // 312 rpm --> 468 rpm
@@ -144,22 +144,25 @@ public class MainV2 extends OpMode {
         intake = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "intake")); // 1150 rpm --> 460 rpm
         indexer = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
         // servos
-        pivot = new CachingServo(hardwareMap.get(Servo.class, "intakePivot")); // 1x axon max
+        pivot = new CachingServo(hardwareMap.get(Servo.class, "pivot")); // 1x axon max
         CachingServo hoodR = new CachingServo(hardwareMap.get(Servo.class, "hoodR")); // 1x axon mini
         CachingServo hoodL = new CachingServo(hardwareMap.get(Servo.class, "hoodL")); // 1x axon mini
         hood = new CombinedServo(hoodR, hoodL); // 2x axon minis
         CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1")); // 1x axon mini
         CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2")); // 1x axon mini
         turret = new CombinedCRServo(turret1, turret2); // 2x axon minis
+        /*
         CachingCRServo aR1 = new CachingCRServo(hardwareMap.get(CRServo.class, "aR1")); // 1x axon max
         CachingCRServo aR2 = new CachingCRServo(hardwareMap.get(CRServo.class, "aR2")); // 1x axon max
         CachingCRServo aL1 = new CachingCRServo(hardwareMap.get(CRServo.class, "aL1")); // 1x axon max
         CachingCRServo aL2 = new CachingCRServo(hardwareMap.get(CRServo.class, "aL2")); // 1x axon max
         ascend = new CombinedCRServo(aR1, aR2, aL1, aL2); // 4x axon maxs
+        */
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         strips = new CachingServo(hardwareMap.get(Servo.class, "strips")); // 4x gobilda strip RGB lights
         stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
-        // limits
+        // limits KACHOWWWWWWWWWW
+        // HELLO CARAMEL HCOLCHATE IZA
         hood.scaleRange(0, 0.38);
         pivot.scaleRange(0, 0.4);
         // turn on motor
@@ -169,7 +172,7 @@ public class MainV2 extends OpMode {
         // reverse
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
         leftRear.setDirection(DcMotorEx.Direction.REVERSE);
-        shooterL.setDirection(DcMotorEx.Direction.REVERSE);
+        shooterR.setDirection(DcMotorEx.Direction.REVERSE);//its saturday
         indexer.setDirection(DcMotorEx.Direction.REVERSE);
         // breaks
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -179,14 +182,14 @@ public class MainV2 extends OpMode {
         shooterL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooterR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // colors
-        gamepad1.setLedColor(0, 255, 255, -1);
+        gamepad1.setLedColor(0, 255, 255, -1);//lalalalalalalallalallalaa
         gamepad2.setLedColor(0, 255, 0, -1);
         LynxUtils.setLynxColor(255, 0, 255);
         // do the strips
         // starting pos
         hood.setPosition(hoodCpos = 0);
         pivot.setPosition(pivotCpos = 0.45);
-        led.setPosition(ledCpos = 0.611);
+        led.setPosition(ledCpos = 0.611);// david is mean he is mad
         pinpoint.recalibrateIMU();
         if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
         MainV1E.lastAutoPos = null;
@@ -203,7 +206,7 @@ public class MainV2 extends OpMode {
         follower.update();
         beams.setMode(DigitalChannel.Mode.INPUT);
         // reset
-        loopTime.reset();
+        loopTime.reset();// stupid robot stupid problems / wow guys david just left / wow hes back w the ugly computer / david is a poopy pants
     }
 
     public void onPromptsComplete() {
@@ -224,11 +227,11 @@ public class MainV2 extends OpMode {
         telemetryM.addLine(true, "INIT DONE!");
         telemetryM.addData(true, "Alliance", alliance);
         telemetryM.addData(true, "Starting pos", startPos);
-        telemetryM.update();
+        telemetryM.update();//TELOMETRY ACTULLY
     }
 
     @Override
-    public void init_loop() {
+    public void init_loop() {// guys the robot moves
         prompter.run();
     }
 
@@ -240,7 +243,7 @@ public class MainV2 extends OpMode {
     @Override
     public void loop() {
         // poses
-        Pose bluePos = new Pose(11, 137, 0);
+        Pose bluePos = new Pose(11, 137, 0);//BYE
         Pose redPos = new Pose(133, 137, 0);
         // debugs
         telemetryM.setDebug(debugMode);
@@ -249,7 +252,7 @@ public class MainV2 extends OpMode {
         turretSS.updatePID(turretPID, PIDTuneTurret.F);
         shooterSS.updatePID(shooterPID);
         shooterSS.setShooterOffset(shooterOffset);
-        shooterSS.setPoses(bluePos, redPos);
+        shooterSS.setPoses(bluePos, redPos); // woah
         turretSS.setPoses(bluePos, redPos);
         // vars
         turretCpos = (-indexer.getCurrentPosition() / (PIDTuneTurret.TPR * PIDTuneTurret.ratio)) * 360;
@@ -267,10 +270,10 @@ public class MainV2 extends OpMode {
         currentGamepad2.copy(gamepad2);
         // servos
         pivot.setPosition(pivotCpos);
-        hood.setPosition(hoodCpos);
+        // hood.setPosition(hoodCpos); // HOOD? IM IN THE GHETTO RATATATATATTAAA
         indexer.setPower(indexerCpos);
         led.setPosition(ledCpos);
-        strips.setPosition(stripsCpos);
+        strips.setPosition(stripsCpos);// go strip
         if(!turretOn) turretSS.turretOn(false);
         if ((currentGamepad1.b && !previousGamepad1.b) || (currentGamepad2.b && !previousGamepad2.b)) turretOn = !turretOn;
         // field side
@@ -284,7 +287,7 @@ public class MainV2 extends OpMode {
             double strafe = gamepad1.left_stick_x; // strafe
             double turn = gamepad1.right_stick_x;  // rotation
             // formula
-            double leftFrontPower = (forward + strafe + turn) * wheelSpeed;
+            double leftFrontPower = (forward + strafe + turn) * wheelSpeed;//ima strafe you out
             double leftBackPower = (forward - strafe + turn) * wheelSpeed;
             double rightFrontPower = (forward - strafe - turn) * wheelSpeed;
             double rightBackPower = (forward + strafe - turn) * wheelSpeed;
@@ -299,17 +302,17 @@ public class MainV2 extends OpMode {
         }
         // controls
         if (INTAKE) {
-            pivotCpos = 0.75;
+            pivotCpos = 0.55;
             if (indexerOn) indexerCpos = 1;
             intake.setPower(1);
             shooterVelo = backSpin;
             if (!beams.getState()) indexerCpos = 0;
         }
         if (OUTTAKE) {
-            indexerOn = true;
-            pivotCpos = 0.75;
+            indexerOn = true;// no
+            pivotCpos = 0.55;
             indexerCpos = -1;
-            intake.setPower(-1);
+            intake.setPower(-1);// :P
         }
         if (FEED) {
             indexerOn = true;
@@ -318,7 +321,7 @@ public class MainV2 extends OpMode {
             intake.setPower(1);
         }
         if (ALIGN_SHOOT) {
-            if (shooterR.getVelocity() >= shooterVelo - 100) {
+            if (shooterR.getVelocity() >= shooterSS.getTargetVelocity() - 100) {
                 gamepad1.rumble(0.8, 0.8, 1000);
                 ledCpos = 1;
             }
@@ -338,7 +341,7 @@ public class MainV2 extends OpMode {
             pivotCpos = 0.45;
             indexerCpos = 0;
             intake.setPower(0);
-            shooterVelo = 0;
+            shooterVelo = 0; // ur the size oF A VELO
         }
         // shooter code
         shooterSS.alignShooter();
@@ -362,7 +365,7 @@ public class MainV2 extends OpMode {
         telemetryM.addData(true, "redSide", redSide);
         telemetryM.addData(true, "beam breaks", !beams.getState());
         telemetryM.update();
-        loopTime.reset();
+        loopTime.reset();//kakkakakakkakakakakkakakakkakakkaaaa
     }
 
     public InterpLUT getShooterLUT() {
@@ -381,7 +384,7 @@ public class MainV2 extends OpMode {
         lut.add(115, 1280);
         lut.add(125, 1320);
         lut.add(135, 1360);
-        // finish
+        // finish - the servos like to fight eachother
         lut.createLUT();
         return lut;
     }
@@ -403,7 +406,7 @@ public class MainV2 extends OpMode {
         lut.add(135, 0.4);
         // finish
         lut.createLUT();
-        return lut;
+        return lut;// do not lock in
     }
     public double alignTurret(double x, double y, double headingDeg, Pose target) {
         double dx = target.getX() - x;
@@ -414,10 +417,5 @@ public class MainV2 extends OpMode {
         double turretAngle = angleToGoal - headingDeg;
         return redSide ?  turretAngle + turretOffset : turretAngle - turretOffset;
     }
-    // wrap code
-    public double wrap(double angle) {
-        if (angle > 190) angle -= 360;
-        if (angle < -210) angle += 360;
-        return angle;
-    }
 }
+// end byw bue

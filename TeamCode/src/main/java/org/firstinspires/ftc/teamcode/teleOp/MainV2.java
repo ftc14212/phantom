@@ -111,7 +111,7 @@ public class MainV2 extends OpMode {
     PIDFCoefficients shooterPID;
     // subsystems
     TurretSS turretSS;
-    ShooterSS shooterSS;
+    ShooterSS shooterSS;//heheheehehhehehe
     @Override
     public void init() {
         if (MainV1E.lastAutoPos == null) prompter.prompt("alliance", new OptionPrompt<>("Select Alliance", MainV1E.Alliance.RED, MainV1E.Alliance.BLUE))
@@ -166,7 +166,7 @@ public class MainV2 extends OpMode {
         hood.scaleRange(0, 0.38);
         pivot.scaleRange(0, 0.4);
         // turn on motor
-        shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);//ok now its a snowday
         shooterL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // reverse
@@ -204,7 +204,7 @@ public class MainV2 extends OpMode {
         // misc
         loopTime = new ElapsedTime();
         follower.update();
-        beams.setMode(DigitalChannel.Mode.INPUT);
+        beams.setMode(DigitalChannel.Mode.INPUT);// im hungry
         // reset
         loopTime.reset();// stupid robot stupid problems / wow guys david just left / wow hes back w the ugly computer / david is a poopy pants
     }
@@ -250,7 +250,7 @@ public class MainV2 extends OpMode {
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         turretSS.updatePID(turretPID, PIDTuneTurret.F);
-        shooterSS.updatePID(shooterPID);
+        shooterSS.updatePID(shooterPID);// woahhh
         shooterSS.setShooterOffset(shooterOffset);
         shooterSS.setPoses(bluePos, redPos); // woah
         turretSS.setPoses(bluePos, redPos);
@@ -302,7 +302,7 @@ public class MainV2 extends OpMode {
         }
         // controls
         if (INTAKE) {
-            pivotCpos = 0.55;
+            pivotCpos = 0.55;// no
             if (indexerOn) indexerCpos = 1;
             intake.setPower(1);
             shooterVelo = backSpin;
@@ -334,7 +334,7 @@ public class MainV2 extends OpMode {
             indexerOn = true;
         } else if (RESET_SHOOTER_TURRET) {
             shooterSS.shooterOn(false);
-            turretSS.turretOn(false);
+            turretSS.turretOn(false);// i could so go for a hot coca right now
             ledCpos = 0.611;
         }
         if (RESET_INTAKE) {
@@ -371,7 +371,7 @@ public class MainV2 extends OpMode {
     public InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 900);
+        lut.add(15, 900);// ratatatatataa
         lut.add(25, 910);
         lut.add(35, 945);
         lut.add(45, 960);

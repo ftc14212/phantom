@@ -10,6 +10,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -63,6 +64,9 @@ public class MainV2 extends OpMode {
     public static double turretTpos = 0;
     public static double shooterVelo = 0;// update servos r kissing
     public double turretCpos;
+    public static double endGameStrips = 0.89;
+    public static double midGameStrips = 0.7;
+    public static double initGameStrips = 0.75;
     // misc
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
@@ -106,12 +110,13 @@ public class MainV2 extends OpMode {
     private static CombinedCRServo ascend; // 4x axon max
     // random
     // GoBildaPrismDriver strips;
+    Timer gameTimer = new Timer();
     // pids
     PIDController turretPID;
     PIDFCoefficients shooterPID;
     // subsystems
     TurretSS turretSS;
-    ShooterSS shooterSS;//heheheehehhehehe
+    ShooterSS shooterSS; // heheheehehhehehe
     @Override
     public void init() {
         if (MainV1E.lastAutoPos == null) prompter.prompt("alliance", new OptionPrompt<>("Select Alliance", MainV1E.Alliance.RED, MainV1E.Alliance.BLUE))
@@ -182,14 +187,15 @@ public class MainV2 extends OpMode {
         shooterL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooterR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // colors
-        gamepad1.setLedColor(0, 255, 255, -1);//lalalalalalalallalallalaa
+        gamepad1.setLedColor(0, 255, 255, -1); // lalalalalalalallalallalaa
         gamepad2.setLedColor(0, 255, 0, -1);
         LynxUtils.setLynxColor(255, 0, 255);
         // do the strips
         // starting pos
         hood.setPosition(hoodCpos = 0);
         pivot.setPosition(pivotCpos = 0.45);
-        led.setPosition(ledCpos = 0.611);// david is mean he is mad
+        led.setPosition(ledCpos = 0.611); // david is mean he is mad
+        strips.setPosition(stripsCpos = initGameStrips); // white
         pinpoint.recalibrateIMU();
         if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
         MainV1E.lastAutoPos = null;
@@ -204,9 +210,9 @@ public class MainV2 extends OpMode {
         // misc
         loopTime = new ElapsedTime();
         follower.update();
-        beams.setMode(DigitalChannel.Mode.INPUT);// im hungry
+        beams.setMode(DigitalChannel.Mode.INPUT); // im hungry
         // reset
-        loopTime.reset();// stupid robot stupid problems / wow guys david just left / wow hes back w the ugly computer / david is a poopy pants
+        loopTime.reset(); // stupid robot stupid problems / wow guys david just left / wow hes back w the ugly computer / david is a poopy pants
     }
 
     public void onPromptsComplete() {
@@ -227,35 +233,38 @@ public class MainV2 extends OpMode {
         telemetryM.addLine(true, "INIT DONE!");
         telemetryM.addData(true, "Alliance", alliance);
         telemetryM.addData(true, "Starting pos", startPos);
-        telemetryM.update();//TELOMETRY ACTULLY
+        telemetryM.update(); // TELOMETRY ACTULLY
     }
 
     @Override
-    public void init_loop() {// guys the robot moves
+    public void init_loop() { // guys the robot moves
         prompter.run();
     }
 
     @Override
     public void start() {
+        gameTimer.resetTimer();
         follower.startTeleopDrive();
     }
 
     @Override
     public void loop() {
         // poses
-        Pose bluePos = new Pose(11, 137, 0);//BYE
+        Pose bluePos = new Pose(11, 137, 0); // BYE
         Pose redPos = new Pose(133, 137, 0);
         // debugs
         telemetryM.setDebug(debugMode);
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         turretSS.updatePID(turretPID, PIDTuneTurret.F);
-        shooterSS.updatePID(shooterPID);// woahhh
+        shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(shooterOffset);
         shooterSS.setPoses(bluePos, redPos); // woah
         turretSS.setPoses(bluePos, redPos);
         // vars
         turretCpos = (-indexer.getCurrentPosition() / (PIDTuneTurret.TPR * PIDTuneTurret.ratio)) * 360;
+        if (gameTimer.getElapsedTimeSeconds() < 100) stripsCpos = midGameStrips;
+        if (gameTimer.getElapsedTimeSeconds() > 100) stripsCpos = endGameStrips;
         // status
         boolean INTAKE = gamepad1.left_trigger > 0.1;
         boolean OUTTAKE = gamepad1.right_trigger > 0.1;
@@ -273,7 +282,7 @@ public class MainV2 extends OpMode {
         // hood.setPosition(hoodCpos); // HOOD? IM IN THE GHETTO RATATATATATTAAA
         indexer.setPower(indexerCpos);
         led.setPosition(ledCpos);
-        strips.setPosition(stripsCpos);// go strip
+        strips.setPosition(stripsCpos); // go strip
         if(!turretOn) turretSS.turretOn(false);
         if ((currentGamepad1.b && !previousGamepad1.b) || (currentGamepad2.b && !previousGamepad2.b)) turretOn = !turretOn;
         // field side
@@ -287,7 +296,7 @@ public class MainV2 extends OpMode {
             double strafe = gamepad1.left_stick_x; // strafe
             double turn = gamepad1.right_stick_x;  // rotation
             // formula
-            double leftFrontPower = (forward + strafe + turn) * wheelSpeed;//ima strafe you out
+            double leftFrontPower = (forward + strafe + turn) * wheelSpeed; //ima strafe you out
             double leftBackPower = (forward - strafe + turn) * wheelSpeed;
             double rightFrontPower = (forward - strafe - turn) * wheelSpeed;
             double rightBackPower = (forward + strafe - turn) * wheelSpeed;
@@ -334,7 +343,7 @@ public class MainV2 extends OpMode {
             indexerOn = true;
         } else if (RESET_SHOOTER_TURRET) {
             shooterSS.shooterOn(false);
-            turretSS.turretOn(false);// i could so go for a hot coca right now
+            turretSS.turretOn(false); // i could so go for a hot coca right now
             ledCpos = 0.611;
         }
         if (RESET_INTAKE) {
@@ -359,26 +368,28 @@ public class MainV2 extends OpMode {
         telemetryM.addData(true, "hood", hood.getPosition());
         telemetryM.addData(true, "indexer", indexer.getPower());
         telemetryM.addData(true, "led", led.getPosition());
+        telemetryM.addData(true, "strips", strips.getPosition());
+        telemetryM.addData(true, "gameTimer", gameTimer.getElapsedTimeSeconds());
         telemetryM.addLine(true, turretSS.telemetry());
         telemetryM.addLine(true, shooterSS.telemetry());
         telemetryM.addData(true, "indexerOn", indexerOn);
         telemetryM.addData(true, "redSide", redSide);
         telemetryM.addData(true, "beam breaks", !beams.getState());
         telemetryM.update();
-        loopTime.reset();//kakkakakakkakakakakkakakakkakakkaaaa
+        loopTime.reset(); // kakkakakakkakakakakkakakakkakakkaaaa
     }
 
     public InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 900);// ratatatatataa
-        lut.add(25, 910);
-        lut.add(35, 945);
-        lut.add(45, 960);
-        lut.add(55, 1005);
-        lut.add(65, 1030);
-        lut.add(75, 1070);
-        lut.add(85, 1110);
+        lut.add(15, 1350); // ratatatatataa
+        lut.add(25, 1300);
+        lut.add(35, 1450);
+        lut.add(45, 1500);
+        lut.add(55, 1500);
+        lut.add(65, 1650);
+        lut.add(75, 1700);
+        lut.add(85, 1800);
         lut.add(105, 1300);
         lut.add(109, 1260);
         lut.add(115, 1280);
@@ -392,13 +403,13 @@ public class MainV2 extends OpMode {
         InterpLUT lut = new InterpLUT();
         // add the data
         lut.add(15, 0.0);
-        lut.add(25, 0.0);
-        lut.add(35, 0.1);
-        lut.add(45, 0.2);
-        lut.add(55, 0.31);
-        lut.add(65, 0.30);
-        lut.add(75, 0.23);
-        lut.add(85, 0.27);
+        lut.add(25, 0.25);
+        lut.add(35, 0.35);
+        lut.add(45, 0.45);
+        lut.add(55, 0.8);
+        lut.add(65, 0.8);
+        lut.add(75, 0.9);
+        lut.add(85, 1);
         lut.add(105, 0.4);
         lut.add(109, 0.6);
         lut.add(115, 0.25);
@@ -406,7 +417,7 @@ public class MainV2 extends OpMode {
         lut.add(135, 0.4);
         // finish
         lut.createLUT();
-        return lut;// do not lock in
+        return lut; // do not lock in
     }
     public double alignTurret(double x, double y, double headingDeg, Pose target) {
         double dx = target.getX() - x;

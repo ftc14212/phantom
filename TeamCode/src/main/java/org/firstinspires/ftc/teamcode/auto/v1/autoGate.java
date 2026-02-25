@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto.v1;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
@@ -33,6 +34,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+@Disabled
 @Configurable
 @Autonomous(name = "auto gate", group = ".ftc14212")
 public class autoGate extends OpMode {

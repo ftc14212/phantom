@@ -98,8 +98,8 @@ public class MainV2 extends OpMode {
     CachingDcMotorEx rightRear; // 312 rpm --> 468 rpm
     CachingDcMotorEx shooterL; // 6000 rpm
     CachingDcMotorEx shooterR; // 6000 rpm
-    CachingDcMotorEx intake; // 1150 rpm
-    CachingDcMotorEx indexer; // 1620 rpm
+    CachingDcMotorEx intake; // 1150 rpm --> 575 rpm
+    CachingDcMotorEx indexer; // 1620 rpm --> 810 rpm
     // servos
     private static CachingServo pivot; // 1x axon max
     private static CachingServo stopper; // 1x axon mini
@@ -207,6 +207,7 @@ public class MainV2 extends OpMode {
         turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
+        turretSS.setWrapAngles(-180, 180);
         // misc
         loopTime = new ElapsedTime();
         follower.update();
@@ -380,7 +381,7 @@ public class MainV2 extends OpMode {
         loopTime.reset(); // kakkakakakkakakakakkakakakkakakkaaaa
     }
 
-    public InterpLUT getShooterLUT() {
+    public static InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
         lut.add(15, 1300); // ratatatatataa
@@ -399,7 +400,7 @@ public class MainV2 extends OpMode {
         lut.createLUT();
         return lut;
     }
-    public InterpLUT getHoodLut() {
+    public static InterpLUT getHoodLut() {
         InterpLUT lut = new InterpLUT();
         // add the data
         lut.add(15, 0.25);

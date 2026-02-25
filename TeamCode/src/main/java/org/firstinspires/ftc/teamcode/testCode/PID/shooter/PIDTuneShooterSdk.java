@@ -20,10 +20,10 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 public class PIDTuneShooterSdk extends OpMode {
     private CachingDcMotorEx shooterR;
     private CachingDcMotorEx shooterL;
-    public static double P = 100;
+    public static double P = 250;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 12;
+    public static double F = 18;
     public static double TARGET = 0; // 3100 max
     TelemetryM telemetryM;
     /**

@@ -207,7 +207,7 @@ public class TurretSS extends SubsystemBase {
         // angle from robot to target
         double angleToGoal = Math.toDegrees(Math.atan2(dy, dx));
         // turret angle = angle to goal minus robot heading
-        double turretAngle = angleToGoal - headingDeg;
+        double turretAngle = headingDeg - angleToGoal;
         return redSide ?  turretAngle + offset : turretAngle - offset;
     }
     // wrap code

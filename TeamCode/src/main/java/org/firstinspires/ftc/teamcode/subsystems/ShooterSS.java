@@ -162,6 +162,7 @@ public class ShooterSS extends SubsystemBase {
                 "Shooter current pos: " + shooterCpos + "\n" +
                 "Hood current pos: " + hoodCpos + "\n" +
                 "Shooter target pos: " + shooterVelo + "\n" +
+                "Distance from target: " + distShooter + "\n" +
                 "-- PID Values --\n" +
                 "P: " + pid.p + "\n" +
                 "I: " + pid.i + "\n" +

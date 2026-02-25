@@ -62,7 +62,7 @@ public class MainV2 extends OpMode {
     public static double ledCpos = 0.611;
     public static double stripsCpos = 0.611;
     public static double turretTpos = 0;
-    public static double shooterVelo = 0;// update servos r kissing
+    public static double shooterVelo = 0; // update servos r kissing
     public double turretCpos;
     public static double endGameStrips = 0.89;
     public static double midGameStrips = 0.7;
@@ -70,17 +70,17 @@ public class MainV2 extends OpMode {
     // misc
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
-    boolean indexerOn = true;// rest in peace my grammy she got hit by a bazzoka
+    boolean indexerOn = true; // rest in peace my grammy she got hit by a bazzoka
     // timers
     ElapsedTime loopTime;
     // odometry
     public static boolean odoDrive = true;
     // config stuff
-    public static boolean redSide = false;// i think about her everytime I hit the kookah
+    public static boolean redSide = false; // i think about her everytime I hit the kookah
     public static boolean debugMode = true;
-    public static double turretOffset = 0;// kabam
-    public static double backSpin = 0;// kaboom
-    public static double shooterOffset = -18;// kachow
+    public static double turretOffset = 3; // kabam
+    public static double backSpin = 0; // kaboom
+    public static double shooterOffset = -15; // kachow
     private final Prompter prompter = new Prompter(this);
     // hardware
     private TelemetryM telemetryM;
@@ -171,13 +171,13 @@ public class MainV2 extends OpMode {
         hood.scaleRange(0, 0.38);
         pivot.scaleRange(0, 0.4);
         // turn on motor
-        shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);//ok now its a snowday
+        shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // ok now its a snowday
         shooterL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // reverse
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
         leftRear.setDirection(DcMotorEx.Direction.REVERSE);
-        shooterR.setDirection(DcMotorEx.Direction.REVERSE);//its saturday
+        shooterR.setDirection(DcMotorEx.Direction.REVERSE); // its saturday
         indexer.setDirection(DcMotorEx.Direction.REVERSE);
         // breaks
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -206,7 +206,7 @@ public class MainV2 extends OpMode {
         // subsystems
         turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
-        shooterSS.setPoses(getShooterLUT(), 15.1, 134.9, getHoodLut(), 15.1, 134.9);
+        shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
         // misc
         loopTime = new ElapsedTime();
         follower.update();
@@ -250,13 +250,14 @@ public class MainV2 extends OpMode {
     @Override
     public void loop() {
         // poses
-        Pose bluePos = new Pose(11, 137, 0); // BYE
-        Pose redPos = new Pose(133, 137, 0);
+        Pose bluePos = new Pose(0, 144, 135); // BYE
+        Pose redPos = new Pose(144, 144, 45);
         // debugs
         telemetryM.setDebug(debugMode);
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         turretSS.updatePID(turretPID, PIDTuneTurret.F);
+        turretSS.setTurretOffset(turretOffset);
         shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(shooterOffset);
         shooterSS.setPoses(bluePos, redPos); // woah
@@ -339,7 +340,7 @@ public class MainV2 extends OpMode {
                 ledCpos = 0.388;
             }
             shooterSS.shooterOn(true);
-            turretSS.turretOn(true);
+            if (turretOn) turretSS.turretOn(true);
             indexerOn = true;
         } else if (RESET_SHOOTER_TURRET) {
             shooterSS.shooterOn(false);
@@ -382,19 +383,18 @@ public class MainV2 extends OpMode {
     public InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 1350); // ratatatatataa
-        lut.add(25, 1300);
+        lut.add(15, 1300); // ratatatatataa
+        lut.add(25, 1350);
         lut.add(35, 1450);
         lut.add(45, 1500);
-        lut.add(55, 1500);
+        lut.add(55, 1600);
         lut.add(65, 1650);
-        lut.add(75, 1700);
+        lut.add(75, 1740);
         lut.add(85, 1800);
-        lut.add(105, 1300);
-        lut.add(109, 1260);
-        lut.add(115, 1280);
-        lut.add(125, 1320);
-        lut.add(135, 1360);
+        lut.add(105, 1750);
+        lut.add(109, 1820);
+        lut.add(115, 1840);
+        lut.add(125, 1840);
         // finish - the servos like to fight eachother
         lut.createLUT();
         return lut;
@@ -402,19 +402,18 @@ public class MainV2 extends OpMode {
     public InterpLUT getHoodLut() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 0.0);
-        lut.add(25, 0.25);
-        lut.add(35, 0.35);
-        lut.add(45, 0.45);
-        lut.add(55, 0.8);
-        lut.add(65, 0.8);
-        lut.add(75, 0.9);
-        lut.add(85, 1);
-        lut.add(105, 0.4);
-        lut.add(109, 0.6);
-        lut.add(115, 0.25);
-        lut.add(125, 0.3);
-        lut.add(135, 0.4);
+        lut.add(15, 0.25);
+        lut.add(25, 0.3);
+        lut.add(35, 0.6);
+        lut.add(45, 0.75);
+        lut.add(55, 0.95);
+        lut.add(65, 0.96);
+        lut.add(75, 0.96);
+        lut.add(85, 0.98);
+        lut.add(105, 1);
+        lut.add(109, 1);
+        lut.add(115, 1);
+        lut.add(125, 1);
         // finish
         lut.createLUT();
         return lut; // do not lock in

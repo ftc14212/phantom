@@ -146,6 +146,12 @@ public class ShooterSS extends SubsystemBase {
     public void shooterOn(boolean shooterOn) {
         this.shooterOn = shooterOn;
     }
+    public void backSpin(int velo) {
+        shooterVelo = velo;
+    }
+    public void stopBackSpin() {
+        shooterVelo = 0;
+    }
     public void alignShooter() {
         shooterVelo = shooterOn ? getShooterVeloLut(distShooter) : 0;
         hoodCpos = shooterOn ? getHoodLut(distShooter) : 0;

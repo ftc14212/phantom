@@ -208,6 +208,8 @@ public class MainV2 extends OpMode {
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
         turretSS.setWrapAngles(-180, 180);
+        turretSS.update(follower);
+        shooterSS.update(follower);
         // misc
         loopTime = new ElapsedTime();
         follower.update();
@@ -285,7 +287,7 @@ public class MainV2 extends OpMode {
         indexer.setPower(indexerCpos);
         led.setPosition(ledCpos);
         strips.setPosition(stripsCpos); // go strip
-        if(!turretOn) turretSS.turretOn(false);
+        if (!turretOn) turretSS.turretOn(false);
         if ((currentGamepad1.b && !previousGamepad1.b) || (currentGamepad2.b && !previousGamepad2.b)) turretOn = !turretOn;
         // field side
         if ((currentGamepad1.share && !previousGamepad1.share) || (currentGamepad2.share && !previousGamepad2.share)) redSide = !redSide;

@@ -199,7 +199,7 @@ public class MainV2 extends OpMode {
         pinpoint.recalibrateIMU();
         if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
         MainV1E.lastAutoPos = null;
-        if (MainV1E.lastTurretPos != -999) turretCpos = MainV1E.lastTurretPos;
+        if (MainV1E.lastTurretPos != -999) turretSS.setTurretCpos(MainV1E.lastTurretPos);
         else indexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         MainV1E.lastTurretPos = -999;

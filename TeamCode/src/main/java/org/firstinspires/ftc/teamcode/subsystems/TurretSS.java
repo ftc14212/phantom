@@ -154,6 +154,9 @@ public class TurretSS extends SubsystemBase {
     public void updateTurretTpos(double turretTpos) {
         this.turretTpos = turretTpos;
     }
+    public void setTurretCpos(double turretCpos) {
+        this.turretCpos = turretCpos;
+    }
     public void setTurretOffset(double offset) {
         this.offset = offset;
     }

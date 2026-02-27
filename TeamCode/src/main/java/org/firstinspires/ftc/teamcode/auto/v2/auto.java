@@ -174,6 +174,52 @@ public class auto extends OpMode {
                 .setConstantHeadingInterpolation(BC.parkPose.getHeading())
                 .build();
     }
+    private void buildRedClose() {
+        scoreClose = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        follower.getPose(),
+                        RC.shootClosePose
+                ))
+                .setConstantHeadingInterpolation(RC.shootClosePose.getHeading())
+                .build();
+        intakeClose = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        follower.getPose(),
+                        RC.intakeClosePose
+                ))
+                .setConstantHeadingInterpolation(RC.intakeClosePose.getHeading())
+                .build();
+        intakeMid = follower.pathBuilder()
+                .addPath(new BezierCurve(
+                        follower.getPose(),
+                        RC.intakeMidControlPose,
+                        RC.intakeMidPose
+                ))
+                .setConstantHeadingInterpolation(RC.intakeMidPose.getHeading())
+                .build();
+        intakeFar = follower.pathBuilder()
+                .addPath(new BezierCurve(
+                        follower.getPose(),
+                        RC.intakeFarControlPose,
+                        RC.intakeFarPose
+                ))
+                .setConstantHeadingInterpolation(RC.intakeFarPose.getHeading())
+                .build();
+        intakeGate = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        follower.getPose(),
+                        RC.intakeGatePose
+                ))
+                .setConstantHeadingInterpolation(RC.intakeGatePose.getHeading())
+                .build();
+        park = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        follower.getPose(),
+                        RC.parkPose
+                ))
+                .setConstantHeadingInterpolation(RC.parkPose.getHeading())
+                .build();
+    }
     /**
      * This method is called once at the init of the OpMode.
      **/
@@ -181,6 +227,7 @@ public class auto extends OpMode {
     public void init() {
         prompter.prompt("alliance", new OptionPrompt<>("Select Alliance", MainV1E.Alliance.RED, MainV1E.Alliance.BLUE))
                 .prompt("start_pos", new OptionPrompt<>("Starting Position", MainV1E.StartPos.FAR, MainV1E.StartPos.CLOSE))
+                .prompt("gate", new BooleanPrompt("Enable Auto Score?", gate))
                 .onComplete(this::onPromptsComplete);
         MainV1E.lastAutoPos = null;
         timer = new Timer();
@@ -245,12 +292,13 @@ public class auto extends OpMode {
     public void onPromptsComplete() {
         alliance = prompter.get("alliance");
         startPos = prompter.get("start_pos");
+        gate = prompter.get("gate");
         if (startPos == MainV1E.StartPos.FAR) {
             // if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(startPoseRF);
             // if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(startPoseBF);
         }
         if (startPos == MainV1E.StartPos.CLOSE) {
-            // if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(startPoseRC);
+            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(RC.startPose);
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(BC.startPose);
         }
         redSide = alliance == MainV1E.Alliance.RED;

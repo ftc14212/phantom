@@ -199,10 +199,6 @@ public class MainV2 extends OpMode {
         pinpoint.recalibrateIMU();
         if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
         MainV1E.lastAutoPos = null;
-        if (MainV1E.lastTurretPos != -999) turretSS.setTurretCpos(MainV1E.lastTurretPos);
-        else indexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        MainV1E.lastTurretPos = -999;
         // subsystems
         turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
@@ -214,6 +210,10 @@ public class MainV2 extends OpMode {
         loopTime = new ElapsedTime();
         follower.update();
         beams.setMode(DigitalChannel.Mode.INPUT); // im hungry
+        if (MainV1E.lastTurretPos != -999) turretSS.setTurretCpos(MainV1E.lastTurretPos);
+        else indexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        MainV1E.lastTurretPos = -999;
         // reset
         loopTime.reset(); // stupid robot stupid problems / wow guys david just left / wow hes back w the ugly computer / david is a poopy pants
     }
@@ -226,7 +226,7 @@ public class MainV2 extends OpMode {
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(new Pose(56.5, 8.3, Math.toRadians(90)));
         }
         if (startPos == MainV1E.StartPos.CLOSE) {
-            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(126, 8.3, Math.PI - Math.toRadians(144)));
+            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(126, 119, Math.PI - Math.toRadians(144)));
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(new Pose(18, 119, Math.toRadians(144)));
         }
         redSide = alliance == MainV1E.Alliance.RED;
@@ -393,11 +393,11 @@ public class MainV2 extends OpMode {
         lut.add(55, 1600);
         lut.add(65, 1650);
         lut.add(75, 1740);
-        lut.add(85, 1800);
+        lut.add(85, 1800); // hi
         lut.add(105, 1750);
         lut.add(109, 1820);
-        lut.add(115, 1840);
-        lut.add(125, 1840);
+        lut.add(115, 1980);
+        lut.add(125, 2100);
         // finish - the servos like to fight eachother
         lut.createLUT();
         return lut;

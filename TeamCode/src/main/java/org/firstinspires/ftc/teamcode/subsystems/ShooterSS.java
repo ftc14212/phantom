@@ -34,6 +34,7 @@ public class ShooterSS extends SubsystemBase {
     double shooterCpos = 0;
     double distShooter = 0;
     double offset = 0;
+    double backSpinVelo = 0;
 
     // POSES
     Pose bluePos = new Pose(11, 137, 0);
@@ -57,6 +58,7 @@ public class ShooterSS extends SubsystemBase {
     // --------------------------------
     boolean redSide = false;
     boolean shooterOn = false;
+    boolean backSpin = false;
     double sLutMin = 0;
     double sLutMax = 0;
     double hLutMin = 0;
@@ -147,13 +149,15 @@ public class ShooterSS extends SubsystemBase {
         this.shooterOn = shooterOn;
     }
     public void backSpin(int velo) {
-        shooterVelo = velo;
+        backSpin = true;
+        backSpinVelo = velo;
     }
     public void stopBackSpin() {
-        shooterVelo = 0;
+        backSpin = false;
+        backSpinVelo = 0;
     }
     public void alignShooter() {
-        shooterVelo = shooterOn ? getShooterVeloLut(distShooter) : 0;
+        shooterVelo = shooterOn ? getShooterVeloLut(distShooter) : backSpin ? backSpinVelo : 0;
         hoodCpos = shooterOn ? getHoodLut(distShooter) : 0;
     }
     public void updatePID(PIDFCoefficients pid) {

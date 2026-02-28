@@ -14,7 +14,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -36,7 +35,6 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
 import org.firstinspires.ftc.teamcode.teleOp.MainV1;
 import org.firstinspires.ftc.teamcode.teleOp.MainV2;
-import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooter;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
@@ -59,6 +57,7 @@ public class auto extends OpMode {
     ElapsedTime loopTime;
     Timer gameTimer = new Timer();
     private Timer timer;
+    private Timer timer2;
     // gamepads
     Gamepad currentGamepad1;
     Gamepad currentGamepad2;
@@ -85,25 +84,25 @@ public class auto extends OpMode {
     // positions
     public static double pivotCpos = 0.45;
     public static double hoodCpos = 0;
-    public static double indexerCpos = 0;
-    public static double ascendCpos = 0;
     public static double ledCpos = 0.611;
     public static double stripsCpos = 0.611;
     public static double turretTpos = 0;
     public static double shooterVelo = 0; // update servos r kissing
-    public static double midGameStrips = 0.7;
     public static double initGameStrips = 0.75;
     // misc
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
     boolean indexerOn = true;
-    public static double turretOffset = 3; // kabam
-    public static double shooterOffset = -18;
+    public static double turretOffset = -3; // kabam
+    public static double shooterOffset = -15;
     public static boolean debugMode = true;
     public static boolean redSide = false;
-    public static int intakeWait = 500;
+    public static int intakeWait = 1000;
+    public static int humanWait = 2000;
     public static int gateWait = 2000;
     public static int shootWait = 1300;
+    public static int shootFarDelay = 500;
+    public static double shooterFarCurrentDrop = 1800;
     DigitalChannel beams;
     private final Prompter prompter = new Prompter(this);
     private MainV1E.Alliance alliance = MainV1E.Alliance.RED;
@@ -113,9 +112,12 @@ public class auto extends OpMode {
     boolean reached = false;
     boolean reached2 = false;
     public static boolean shooterOn = true;
+    int shot = 0;
     boolean ran = false;
     boolean ran2 = false;
-    public static boolean gate = false;
+    boolean gate = false;
+    boolean humanPlayer = false;
+    boolean temp = false;
     // close
     private PathChain scoreClose, intakeClose, intakeMid, intakeFar, intakeGate, park;
     // close
@@ -129,9 +131,11 @@ public class auto extends OpMode {
     boolean intakedFar = false;
     boolean intakedGate = false;
     // far
-    private PathChain leave;
+    private PathChain shootFar, leave, human;
     // far
+    boolean shootStarted = false;
     boolean leaveStarted = false;
+    boolean humanStarted = false;
 
     /**
      * This method is called once at the init of the OpMode.
@@ -140,10 +144,18 @@ public class auto extends OpMode {
     public void init() {
         prompter.prompt("alliance", new OptionPrompt<>("Select Alliance", MainV1E.Alliance.RED, MainV1E.Alliance.BLUE))
                 .prompt("start_pos", new OptionPrompt<>("Starting Position", MainV1E.StartPos.FAR, MainV1E.StartPos.CLOSE))
-                .prompt("gate", new BooleanPrompt("Enable Auto Score?", gate))
+                .prompt("human", () -> {
+                    if (prompter.get("start_pos") == MainV1E.StartPos.FAR) return new BooleanPrompt("Intake human player", true);
+                    return null; // Skip
+                })
+                .prompt("gate", () -> {
+                    if (prompter.get("start_pos") == MainV1E.StartPos.CLOSE) return new BooleanPrompt("Use the gate", false);
+                    return null; // Skip
+                })
                 .onComplete(this::onPromptsComplete);
         MainV1E.lastAutoPos = null;
         timer = new Timer();
+        timer2 = new Timer();
         loopTime = new ElapsedTime();
         loopTime.reset();
         // hardware
@@ -221,9 +233,23 @@ public class auto extends OpMode {
         leave = follower.pathBuilder()
                 .addPath(new BezierLine(
                         follower.getPose(),
-                        RF.parkPose
+                        BF.parkPose
                 ))
-                .setConstantHeadingInterpolation(RF.parkPose.getHeading())
+                .setConstantHeadingInterpolation(BF.parkPose.getHeading())
+                .build();
+        human = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        follower.getPose(),
+                        BF.humanPose
+                ))
+                .setConstantHeadingInterpolation(BF.humanPose.getHeading())
+                .build();
+        shootFar = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        follower.getPose(),
+                        BF.startPose
+                ))
+                .setConstantHeadingInterpolation(BF.startPose.getHeading())
                 .build();
     }
     private void buildRedFar() {
@@ -233,6 +259,20 @@ public class auto extends OpMode {
                         RF.parkPose
                 ))
                 .setConstantHeadingInterpolation(RF.parkPose.getHeading())
+                .build();
+        human = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        follower.getPose(),
+                        RF.humanPose
+                ))
+                .setConstantHeadingInterpolation(RF.humanPose.getHeading())
+                .build();
+        shootFar = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        follower.getPose(),
+                        RF.startPose
+                ))
+                .setConstantHeadingInterpolation(RF.startPose.getHeading())
                 .build();
     }
     private void buildBlueClose() {
@@ -482,37 +522,97 @@ public class auto extends OpMode {
     }
 
     public void farStates() {
-        if (pathState == 0) {
-            if (!leaveStarted) {
-                if (shooterOn) shooterSS.shooterOn(true);
-                if (turretOn) turretSS.turretOn(true);
-                ledCpos = 0.388;
-                leaveStarted = true;
-            }
-            if (shooterR.getVelocity() >= shooterSS.getTargetVelocity()) {
-                if (!ran) {
+        switch (pathState) {
+            case 0:
+                if (!shootStarted) {
+                    timer2.resetTimer();
+                    RESET_INTAKE();
+                    shooterSS.stopBackSpin();
                     timer.resetTimer();
-                    ran = true;
+                    if (shooterOn) shooterSS.shooterOn(true);
+                    if (turretOn) turretSS.turretOn(true);
+                    ledCpos = 0.388;
+                    reached = false;
+                    follower.followPath(shootFar, true);
+                    shootStarted = true;
                 }
-                FEED();
-                ledCpos = 1;
-            }
-            if ((timer.getElapsedTime() >= shootWait && ledCpos == 1) || !shooterOn) {
-                RESET_SHOOTER_TURRET();
-                ran = false;
-                follower.followPath(leave);
-                setPathState(-1);
-            }
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(RF.startPose, 5, 5)) reached = true;
+                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BF.startPose, 5, 5)) reached = true;
+                if (reached) {
+                    if (!ran2) {
+                        timer2.resetTimer();
+                        ran2 = true;
+                    }
+                    if (shooterR.getVelocity() >= shooterSS.getTargetVelocity()) {
+                        if (timer.getElapsedTime() >= shootFarDelay) {
+                            indexer.setPower(0.6);
+                            intake.setPower(0.6);
+                            ran = false;
+                            ledCpos = 0.721;
+                        } else {
+                            ledCpos = 1;
+                            RESET_INTAKE();
+                        }
+
+                    }
+                    if (shooterR.getCurrent(CurrentUnit.MILLIAMPS) >= shooterFarCurrentDrop) {
+                        if (!ran) {
+                            shot++;
+                            timer.resetTimer();
+                            ran = true;
+                        }
+                    }
+                    if (shot > 3 || !shooterOn || timer2.getElapsedTimeSeconds() > 10) {
+                        RESET_SHOOTER_TURRET();
+                        ran = false;
+                        ran2 = false;
+                        if (humanPlayer && !humanStarted) setPathState(1);
+                        else if (!leaveStarted) setPathState(2);
+                    }
+                }
+                break;
+            case 1:
+                if (!humanStarted) {
+                    shootStarted = false;
+                    timer2.resetTimer();
+                    reached = false;
+                    shot = 0;
+                    wheelSpeed = 0.6;
+                    INTAKE();
+                    follower.followPath(human, true);
+                    humanStarted = true;
+                }
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(RF.humanPose, 5, 5)) reached = true;
+                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BF.humanPose, 5, 5)) reached = true;
+                if (reached) {
+                    if (!ran2) {
+                        timer.resetTimer();
+                        ran2 = true;
+                    }
+                    if (timer.getElapsedTime() > humanWait) {
+                        wheelSpeed = 0.85 ;
+                        ran = false;
+                        RESET_INTAKE();
+                        setPathState(0);
+                    }
+                }
+                break;
+            case 2:
+                if (!follower.isBusy()) {
+                    follower.followPath(leave, true);
+                    setPathState(-1);
+                }
+                break;
         }
     }
 
 
     public void INTAKE() {
         pivotCpos = 0.55;// no
-        if (indexerOn) indexer.setPower(1);
         intake.setPower(1);
         if (!beams.getState()) indexer.setPower(0);
-        shooterSS.backSpin(-300);
+        else if (indexerOn) indexer.setPower(1);
+        shooterSS.backSpin(-600);
     }
 
     public void OUTTAKE() {
@@ -543,7 +643,8 @@ public class auto extends OpMode {
     public void onPromptsComplete() {
         alliance = prompter.get("alliance");
         startPos = prompter.get("start_pos");
-        gate = prompter.get("gate");
+        gate = prompter.getOrDefault("gate", false);
+        humanPlayer = prompter.getOrDefault("human", false);
         if (startPos == MainV1E.StartPos.FAR) {
             if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(RF.startPose);
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(BF.startPose);
@@ -553,13 +654,16 @@ public class auto extends OpMode {
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(BC.startPose);
         }
         redSide = alliance == MainV1E.Alliance.RED;
-        intakedGate = redSide;
-        MainV1.redSide = alliance == MainV1E.Alliance.RED;
+        MainV2.redSide = alliance == MainV1E.Alliance.RED;
+        turretSS.setRedSide(redSide);
+        shooterSS.setRedSide(redSide);
         buildPaths();
         telemetryM.addLine("PHANTOM Team 14212!");
         telemetryM.addLine(true, "INIT DONE!");
         telemetryM.addData(true, "Alliance", alliance);
         telemetryM.addData(true, "Starting pos", startPos);
+        telemetryM.addData(true, "Using gate", gate);
+        telemetryM.addData(true, "Starting pos", humanPlayer);
         telemetryM.update();
     }
     /**
@@ -584,7 +688,7 @@ public class auto extends OpMode {
         if(!turretOn) turretSS.turretOn(false);
         if(!shooterOn) shooterSS.shooterOn(false);
         follower.setMaxPower(wheelSpeed);
-        // if (startPos == MainV1E.StartPos.FAR) farStates();
+        if (startPos == MainV1E.StartPos.FAR) farStates();
         if (startPos == MainV1E.StartPos.CLOSE) closeStates();
         // servos
         pivot.setPosition(pivotCpos);
@@ -599,9 +703,11 @@ public class auto extends OpMode {
         turretSS.update(follower);
         follower.update();
         MainV1E.lastAutoPos = follower.getPose();
+        MainV1E.lastTurretPos = turretSS.getCurrentPos();
         // telemetry
         telemetryM.addLine("PHANTOM Team 14212!");
         telemetryM.addData(true, "loop times", loopTime.milliseconds());
+        telemetryM.addData(true, "timer", timer.getElapsedTime());
         telemetryM.addData(true, "pivot", pivot.getPosition());
         telemetryM.addData(true, "hood", hood.getPosition());
         telemetryM.addData(true, "indexer", indexer.getPower());
@@ -637,6 +743,5 @@ public class auto extends OpMode {
     @Override
     public void stop() {
         MainV1E.lastAutoPos = follower.getPose(); // COMMENT THIS IF TELEOP AFTER AUTO NO WORKY
-        MainV1E.lastTurretPos = turretSS.getCurrentPos();
     }
 }

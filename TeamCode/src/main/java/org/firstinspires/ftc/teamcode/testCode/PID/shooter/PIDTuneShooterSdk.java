@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 
@@ -20,10 +21,10 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 public class PIDTuneShooterSdk extends OpMode {
     private CachingDcMotorEx shooterR;
     private CachingDcMotorEx shooterL;
-    public static double P = 250;
+    public static double P = 100;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 18;
+    public static double F = 13;
     public static double TARGET = 0; // 3100 max
     TelemetryM telemetryM;
     /**
@@ -74,6 +75,9 @@ public class PIDTuneShooterSdk extends OpMode {
         telemetryM.addData("velocityR", velocityR);
         telemetryM.addData("velocityL", velocityL);
         telemetryM.addData("rawVelocity", (velocityL + velocityR)/2);
+        telemetryM.addData("currentR", shooterR.getCurrent(CurrentUnit.MILLIAMPS));
+        telemetryM.addData("currentL", shooterL.getCurrent(CurrentUnit.MILLIAMPS));
+        telemetryM.addData("rawVelocity", (shooterL.getCurrent(CurrentUnit.MILLIAMPS) + shooterR.getCurrent(CurrentUnit.MILLIAMPS))/2);
         telemetryM.addData("errorR", Math.abs(TARGET - velocityR));
         telemetryM.addData("errorL", Math.abs(TARGET - velocityL));
         telemetryM.addData("errorAvg", (Math.abs(TARGET - velocityR) + Math.abs(TARGET - velocityL)) / 2);

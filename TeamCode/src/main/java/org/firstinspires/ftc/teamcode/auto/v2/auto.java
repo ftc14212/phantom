@@ -93,7 +93,8 @@ public class auto extends OpMode {
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
     boolean indexerOn = true;
-    public static double turretOffset = -3; // kabam
+    public static double turretOffsetR = -3; // kabam
+    public static double turretOffsetB = 0; // kabam
     public static double shooterOffset = -15;
     public static boolean debugMode = true;
     public static boolean redSide = false;
@@ -115,6 +116,7 @@ public class auto extends OpMode {
     int shot = 0;
     boolean ran = false;
     boolean ran2 = false;
+    boolean ran3 = false;
     boolean gate = false;
     boolean humanPlayer = false;
     boolean temp = false;
@@ -209,11 +211,9 @@ public class auto extends OpMode {
         gamepad2.setLedColor(0, 255, 0, -1);
         LynxUtils.setLynxColor(255, 0, 255);
         // subsystems
-        turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(MainV2.getShooterLUT(), 15.1, 124.9, MainV2.getHoodLut(), 15.1, 124.9);
-        turretSS.setWrapAngles(-180, 180);
-        turretSS.update(follower);
+
         shooterSS.update(follower);
     }
 
@@ -373,6 +373,7 @@ public class auto extends OpMode {
         switch (pathState) {
             case 0:
                 if (!shootCloseStarted) {
+                    ran3 = false;
                     shooterSS.stopBackSpin();
                     if (shooterOn) shooterSS.shooterOn(true);
                     if (turretOn) turretSS.turretOn(true);
@@ -382,18 +383,26 @@ public class auto extends OpMode {
                     follower.followPath(scoreClose, true);
                     shootCloseStarted = true;
                 }
-                if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.shootClosePose, 5, 5)) reached2 = true;
-                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.shootClosePose, 5, 5)) reached2 = true;
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.shootClosePose, 8, 8)) reached2 = true;
+                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.shootClosePose, 8, 8)) reached2 = true;
+                if (reached2) {
+                    if (!ran3) {
+                        timer2.resetTimer();
+                        ran3 = true;
+                    }
+                }
                 if (reached2 && shootCloseStarted) {
                     if (shooterR.getVelocity() >= shooterSS.getTargetVelocity()) {
-                        if (!ran) {
-                            timer.resetTimer();
-                            ran = true;
+                        if (timer2.getElapsedTimeSeconds() > 2) {
+                            if (!ran) {
+                                timer.resetTimer();
+                                ran = true;
+                            }
+                            FEED();
                         }
-                        FEED();
                         ledCpos = 1;
                     }
-                    if ((timer.getElapsedTime() >= shootWait && ledCpos == 1) || !shooterOn) {
+                    if ((timer.getElapsedTime() >= shootWait && ledCpos == 1 && timer2.getElapsedTimeSeconds() > 2) || !shooterOn) {
                         RESET_SHOOTER_TURRET();
                         ran = false;
                         if (gate) {
@@ -654,9 +663,13 @@ public class auto extends OpMode {
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(BC.startPose);
         }
         redSide = alliance == MainV1E.Alliance.RED;
-        MainV2.redSide = alliance == MainV1E.Alliance.RED;
+        MainV2.redSide = redSide;
+        MainV1E.redSideS = redSide;
+        turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, redSide ? turretOffsetR : turretOffsetB, MainV1E.lastTurretPos);
         turretSS.setRedSide(redSide);
         shooterSS.setRedSide(redSide);
+        turretSS.setWrapAngles(-180, 180);
+        turretSS.update(follower);
         buildPaths();
         telemetryM.addLine("PHANTOM Team 14212!");
         telemetryM.addLine(true, "INIT DONE!");
@@ -680,7 +693,7 @@ public class auto extends OpMode {
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         turretSS.updatePID(turretPID, PIDTuneTurret.F);
-        turretSS.setTurretOffset(turretOffset);
+        turretSS.setTurretOffset(alliance == MainV1E.Alliance.RED ? turretOffsetR : turretOffsetB);
         shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(shooterOffset);
         shooterSS.setPoses(bluePos, redPos); // woah
@@ -742,6 +755,6 @@ public class auto extends OpMode {
      **/
     @Override
     public void stop() {
-        MainV1E.lastAutoPos = follower.getPose(); // COMMENT THIS IF TELEOP AFTER AUTO NO WORKY
+        // MainV1E.lastAutoPos = follower.getPose(); // COMMENT THIS IF TELEOP AFTER AUTO NO WORKY
     }
 }

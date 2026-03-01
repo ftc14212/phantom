@@ -55,7 +55,7 @@ public class MainV2 extends OpMode {
      * @author David Grieas, Iza Sikorski - 14212 MetroBotics
     **/
     // positions
-    public static double pivotCpos = 0.45;
+    public static double pivotCpos = 0.38;
     public static double hoodCpos = 0;
     public static double indexerCpos = 0;
     public static double ascendCpos = 0;
@@ -76,7 +76,7 @@ public class MainV2 extends OpMode {
     // odometry
     public static boolean odoDrive = true;
     // config stuff
-    public static boolean redSide = false; // i think about her everytime I hit the kookah
+    public static boolean redSide; // i think about her everytime I hit the kookah
     public static boolean debugMode = true;
     public static double turretOffset = 3; // kabam
     public static double backSpin = 0; // kaboom
@@ -192,13 +192,13 @@ public class MainV2 extends OpMode {
         LynxUtils.setLynxColor(255, 0, 255);
         // do the strips
         // starting pos
+        if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
+        MainV1E.lastAutoPos = null;
         hood.setPosition(hoodCpos = 0);
-        pivot.setPosition(pivotCpos = 0.45);
+        pivot.setPosition(pivotCpos = 0.38);
         led.setPosition(ledCpos = 0.611); // david is mean he is mad
         strips.setPosition(stripsCpos = initGameStrips); // white
         pinpoint.recalibrateIMU();
-        if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
-        MainV1E.lastAutoPos = null;
         // subsystems
         turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
@@ -214,6 +214,12 @@ public class MainV2 extends OpMode {
         else indexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         MainV1E.lastTurretPos = -999;
+        if (MainV1E.redSideS) {
+            redSide = true;
+            turretSS.setRedSide(true);
+            shooterSS.setRedSide(true);
+            MainV1E.redSideS = false;
+        }
         // reset
         loopTime.reset(); // stupid robot stupid problems / wow guys david just left / wow hes back w the ugly computer / david is a poopy pants
     }
@@ -329,7 +335,7 @@ public class MainV2 extends OpMode {
         }
         if (FEED) {
             indexerOn = true;
-            pivotCpos = 0.45;
+            pivotCpos = 0.38;
             indexerCpos = 1;
             intake.setPower(1);
         }
@@ -351,7 +357,7 @@ public class MainV2 extends OpMode {
             ledCpos = 0.611;
         }
         if (RESET_INTAKE) {
-            pivotCpos = 0.45;
+            pivotCpos = 0.38;
             indexerCpos = 0;
             intake.setPower(0);
             shooterVelo = 0; // ur the size oF A VELO

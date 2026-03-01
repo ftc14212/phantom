@@ -14,4 +14,5 @@ public class MainV1E {
     }
     public static Pose lastAutoPos = null;
     public static double lastTurretPos = -999;
+    public static boolean redSideS = false;
 }

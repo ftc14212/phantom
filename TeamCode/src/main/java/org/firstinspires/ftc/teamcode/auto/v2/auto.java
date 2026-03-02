@@ -84,7 +84,7 @@ public class auto extends OpMode {
     // positions
     public static double pivotCpos = 0.45;
     public static double hoodCpos = 0;
-    public static double ledCpos = 0.611;
+    public static double ledCpos = 0.667;
     public static double stripsCpos = 0.611;
     public static double turretTpos = 0;
     public static double shooterVelo = 0; // update servos r kissing
@@ -204,7 +204,7 @@ public class auto extends OpMode {
         // starting pos
         hood.setPosition(hoodCpos = 0);
         pivot.setPosition(pivotCpos = 0.45);
-        led.setPosition(ledCpos = 0.611); // david is mean he is mad
+        led.setPosition(ledCpos = 0.667); // david is mean he is mad
         strips.setPosition(stripsCpos = initGameStrips); // white
         // colors
         gamepad1.setLedColor(0, 255, 255, -1);
@@ -292,7 +292,7 @@ public class auto extends OpMode {
                 .build();
         intakeMid = follower.pathBuilder()
                 .addPath(new BezierCurve(
-                        follower.getPose(),
+                        BC.shootClosePose,
                         BC.intakeMidControlPose,
                         BC.intakeMidPose
                 ))
@@ -300,7 +300,7 @@ public class auto extends OpMode {
                 .build();
         intakeFar = follower.pathBuilder()
                 .addPath(new BezierCurve(
-                        follower.getPose(),
+                        BC.shootClosePose,
                         BC.intakeFarControlPose,
                         BC.intakeFarPose
                 ))
@@ -338,7 +338,7 @@ public class auto extends OpMode {
                 .build();
         intakeMid = follower.pathBuilder()
                 .addPath(new BezierCurve(
-                        follower.getPose(),
+                        RC.shootClosePose,
                         RC.intakeMidControlPose,
                         RC.intakeMidPose
                 ))
@@ -346,7 +346,7 @@ public class auto extends OpMode {
                 .build();
         intakeFar = follower.pathBuilder()
                 .addPath(new BezierCurve(
-                        follower.getPose(),
+                        RC.shootClosePose,
                         RC.intakeFarControlPose,
                         RC.intakeFarPose
                 ))
@@ -374,6 +374,7 @@ public class auto extends OpMode {
             case 0:
                 if (!shootCloseStarted) {
                     ran3 = false;
+                    ran2 = false;
                     shooterSS.stopBackSpin();
                     if (shooterOn) shooterSS.shooterOn(true);
                     if (turretOn) turretSS.turretOn(true);
@@ -387,6 +388,7 @@ public class auto extends OpMode {
                 if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.shootClosePose, 8, 8)) reached2 = true;
                 if (reached2) {
                     if (!ran3) {
+                        timer.resetTimer();
                         timer2.resetTimer();
                         ran3 = true;
                     }
@@ -461,7 +463,6 @@ public class auto extends OpMode {
                     if (timer.getElapsedTime() > intakeWait) {
                         wheelSpeed = 1;
                         ran = false;
-                        ran2 = false;
                         RESET_INTAKE();
                         intakedMid = true;
                         setPathState(0);
@@ -474,6 +475,7 @@ public class auto extends OpMode {
                     wheelSpeed = 1;
                     INTAKE();
                     follower.followPath(intakeFar, true);
+                    ledCpos = 0.28;
                     shootCloseStarted = false;
                     intakedFar = true;
                     intakeFarStarted = true;
@@ -488,7 +490,6 @@ public class auto extends OpMode {
                     if (timer.getElapsedTime() > intakeWait) {
                         wheelSpeed = 1;
                         ran = false;
-                        ran2 = false;
                         RESET_INTAKE();
                         setPathState(0);
                     }
@@ -646,7 +647,7 @@ public class auto extends OpMode {
     public void RESET_SHOOTER_TURRET() {
         shooterSS.shooterOn(false);
         turretSS.turretOn(false); // i could so go for a hot coca right now
-        ledCpos = 0.611;
+        ledCpos = 0.667;
     }
 
     public void onPromptsComplete() {

@@ -203,7 +203,7 @@ public class MainV2 extends OpMode {
         turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
-        turretSS.setWrapAngles(-180, 180);
+        turretSS.setWrapAngles(180, -5180);
         turretSS.update(follower);
         shooterSS.update(follower);
         // misc
@@ -228,8 +228,8 @@ public class MainV2 extends OpMode {
         MainV1E.Alliance alliance = prompter.get("alliance");
         MainV1E.StartPos startPos = prompter.get("start_pos");
         if (startPos == MainV1E.StartPos.FAR) {
-            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(87.5, 8.3, Math.toRadians(90)));
-            if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(new Pose(56.5, 8.3, Math.toRadians(90)));
+            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(89.4, 7.8, Math.toRadians(90)));
+            if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(new Pose(54.6, 7.8, Math.toRadians(90)));
         }
         if (startPos == MainV1E.StartPos.CLOSE) {
             if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(126, 119, Math.PI - Math.toRadians(144)));

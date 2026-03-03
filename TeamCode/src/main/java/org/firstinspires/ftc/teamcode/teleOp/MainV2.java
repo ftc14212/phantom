@@ -395,9 +395,9 @@ public class MainV2 extends OpMode {
         lut.add(15, 1300); // ratatatatataa
         lut.add(25, 1350);
         lut.add(35, 1450);
-        lut.add(45, 1500);
-        lut.add(55, 1600);
-        lut.add(65, 1650);
+        lut.add(45, 1620);
+        lut.add(55, 1660);
+        lut.add(65, 1640);
         lut.add(75, 1740);
         lut.add(85, 1800); // hi
         lut.add(105, 1750);
@@ -414,15 +414,34 @@ public class MainV2 extends OpMode {
         lut.add(15, 0.25);
         lut.add(25, 0.3);
         lut.add(35, 0.6);
-        lut.add(45, 0.75);
-        lut.add(55, 0.95);
-        lut.add(65, 0.96);
-        lut.add(75, 0.96);
+        lut.add(45, 1);
+        lut.add(55, 1);
+        lut.add(65, 1);
+        lut.add(75, 1);
         lut.add(85, 0.98);
         lut.add(105, 1);
         lut.add(109, 1);
         lut.add(115, 1);
         lut.add(125, 1);
+        // finish
+        lut.createLUT();
+        return lut; // do not lock in
+    }
+    public static InterpLUT getTransferLut() {
+        InterpLUT lut = new InterpLUT();
+        // add the data
+        lut.add(15, 1);
+        lut.add(25, 1);
+        lut.add(35, 1);
+        lut.add(45, 1);
+        lut.add(55, 0.75);
+        lut.add(65, 0.7);
+        lut.add(75, 0.);
+        lut.add(85, 0.);
+        lut.add(105, 0.);
+        lut.add(109, 0.);
+        lut.add(115, 0.);
+        lut.add(125, 0.);
         // finish
         lut.createLUT();
         return lut; // do not lock in

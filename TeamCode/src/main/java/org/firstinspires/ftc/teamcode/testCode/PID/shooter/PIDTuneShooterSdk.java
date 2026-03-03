@@ -21,7 +21,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 public class PIDTuneShooterSdk extends OpMode {
     private CachingDcMotorEx shooterR;
     private CachingDcMotorEx shooterL;
-    public static double P = 100;
+    public static double P = 55;
     public static double I = 0;
     public static double D = 0;
     public static double F = 13;
@@ -77,7 +77,7 @@ public class PIDTuneShooterSdk extends OpMode {
         telemetryM.addData("rawVelocity", (velocityL + velocityR)/2);
         telemetryM.addData("currentR", shooterR.getCurrent(CurrentUnit.MILLIAMPS));
         telemetryM.addData("currentL", shooterL.getCurrent(CurrentUnit.MILLIAMPS));
-        telemetryM.addData("rawVelocity", (shooterL.getCurrent(CurrentUnit.MILLIAMPS) + shooterR.getCurrent(CurrentUnit.MILLIAMPS))/2);
+        telemetryM.addData("rawCurrent", (shooterL.getCurrent(CurrentUnit.MILLIAMPS) + shooterR.getCurrent(CurrentUnit.MILLIAMPS))/2);
         telemetryM.addData("errorR", Math.abs(TARGET - velocityR));
         telemetryM.addData("errorL", Math.abs(TARGET - velocityL));
         telemetryM.addData("errorAvg", (Math.abs(TARGET - velocityR) + Math.abs(TARGET - velocityL)) / 2);

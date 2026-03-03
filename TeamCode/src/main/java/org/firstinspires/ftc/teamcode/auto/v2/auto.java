@@ -93,7 +93,7 @@ public class auto extends OpMode {
     public static boolean turretOn = true;
     boolean indexerOn = true;
     public static double turretOffsetR = -3; // kabam
-    public static double turretOffsetB = 0; // kabam
+    public static double turretOffsetB = 8; // kabam
     public static double shooterOffset = -15;
     public static boolean debugMode = true;
     public static boolean redSide = false;
@@ -310,7 +310,7 @@ public class auto extends OpMode {
                             timer2.resetTimer();
                             ran2 = true;
                         }
-                        if (timer2.getElapsedTimeSeconds() >= 2) {
+                        if (timer2.getElapsedTimeSeconds() >= 1) {
                             if (!ran) {
                                 timer.resetTimer();
                                 FEED();
@@ -362,7 +362,7 @@ public class auto extends OpMode {
                     ran2 = false;
                     intakedClose = true;
                     setPathState(0);
-                }
+                } else INTAKE();
                 break;
             case 2:
                 if (!intakeMidStarted) {
@@ -372,6 +372,8 @@ public class auto extends OpMode {
                     shootCloseStarted = false;
                     intakeMidStarted = true;
                 }
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.intakeMidPose, 5, 5)) reached = true;
+                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.intakeMidPose, 5, 5)) reached = true;
                 if (reached && !ran2) {
                     timer.resetTimer();
                     ran2 = true;
@@ -383,12 +385,13 @@ public class auto extends OpMode {
                     ran2 = false;
                     intakedClose = true;
                     setPathState(0);
-                }
+                } else INTAKE();
                 break;
             case 3:
                 if (!intakeFarStarted) {
                     reached2 = false;
                     wheelSpeed = 1;
+                    ledCpos = 0.278;
                     INTAKE();
                     follower.followPath(intakeFar, true);
                     shootCloseStarted = false;
@@ -408,7 +411,7 @@ public class auto extends OpMode {
                     ran2 = false;
                     intakedClose = true;
                     setPathState(0);
-                }
+                } else INTAKE();
                 break;
             case 4:
                 if (!intakeGateStarted) {

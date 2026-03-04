@@ -397,8 +397,8 @@ public class MainV2 extends OpMode {
         lut.add(35, 1340);
         lut.add(45, 1400);
         lut.add(55, 1475);
-        lut.add(65, 1590);
-        lut.add(75, 0);
+        lut.add(65, 1760);
+        lut.add(75, 1745);
         lut.add(85, 0); // hi
         lut.add(105, 0);
         lut.add(109, 0);
@@ -416,8 +416,8 @@ public class MainV2 extends OpMode {
         lut.add(35, 0.85);
         lut.add(45, 0.95);
         lut.add(55, 0.98);
-        lut.add(65, 1);
-        lut.add(75, 0);
+        lut.add(65, 0.92);
+        lut.add(75, 1);
         lut.add(85, 0);
         lut.add(105, 0);
         lut.add(109, 0);

@@ -45,9 +45,7 @@ public class measureShooter extends LinearOpMode {
         CachingDcMotorEx shooterL = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterL")); // 6000 rpm
         CachingDcMotorEx shooterR = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterR")); // 6000 rpm
         CachingDcMotorEx indexer = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1620 rpm
-        CachingDcMotorEx intake = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "intake")); // 1150 rpm --> 460 rpm
         // servos
-        CachingServo pivot = new CachingServo(hardwareMap.get(Servo.class, "pivot")); // 1x axon max
         CachingServo hoodR = new CachingServo(hardwareMap.get(Servo.class, "hoodR")); // 1x axon mini
         CachingServo hoodL = new CachingServo(hardwareMap.get(Servo.class, "hoodL")); // 1x axon mini
         CombinedServo hood = new CombinedServo(hoodR, hoodL); // 2x axon minis
@@ -56,7 +54,6 @@ public class measureShooter extends LinearOpMode {
         CombinedCRServo turret = new CombinedCRServo(turret1, turret2); // 2x axon minis
         // limits
         hood.scaleRange(0, 0.38);
-        pivot.scaleRange(0, 0.4);
         // reverse
         indexer.setDirection(DcMotorEx.Direction.REVERSE);
         shooterR.setDirection(DcMotorEx.Direction.REVERSE);
@@ -79,8 +76,6 @@ public class measureShooter extends LinearOpMode {
                 shooterL.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
                 shooterR.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
                 indexer.setPower(turnOn ? indexerSpeed : 0);
-                pivot.setPosition(0.55); // no
-                intake.setPower(turnOn ? indexerSpeed : 0);
                 hood.setPosition(hoodCpos);
                 shooterR.setVelocity(turnOn ? shooterVelo : 0); // leader
                 shooterL.setVelocity(turnOn ? shooterVelo : 0); // follower

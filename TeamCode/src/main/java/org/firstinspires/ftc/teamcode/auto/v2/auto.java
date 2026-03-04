@@ -383,7 +383,7 @@ public class auto extends OpMode {
                     RESET_INTAKE();
                     ran = false;
                     ran2 = false;
-                    intakedClose = true;
+                    intakedMid = true;
                     setPathState(0);
                 } else INTAKE();
                 break;
@@ -395,7 +395,6 @@ public class auto extends OpMode {
                     INTAKE();
                     follower.followPath(intakeFar, true);
                     shootCloseStarted = false;
-                    intakedFar = true;
                     intakeFarStarted = true;
                 }
                 if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.intakeFarPose, 5, 5)) reached = true;
@@ -409,7 +408,7 @@ public class auto extends OpMode {
                     RESET_INTAKE();
                     ran = false;
                     ran2 = false;
-                    intakedClose = true;
+                    intakedFar = true;
                     setPathState(0);
                 } else INTAKE();
                 break;

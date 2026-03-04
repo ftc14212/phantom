@@ -392,18 +392,18 @@ public class MainV2 extends OpMode {
     public static InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 1300); // ratatatatataa
-        lut.add(25, 1350);
-        lut.add(35, 1450);
-        lut.add(45, 1620);
-        lut.add(55, 1660);
-        lut.add(65, 1640);
-        lut.add(75, 1740);
-        lut.add(85, 1800); // hi
-        lut.add(105, 1750);
-        lut.add(109, 1820);
-        lut.add(115, 1980);
-        lut.add(125, 2100);
+        lut.add(15, 1200); // ratatatatataa
+        lut.add(25, 1280);
+        lut.add(35, 1340);
+        lut.add(45, 1400);
+        lut.add(55, 1475);
+        lut.add(65, 1590);
+        lut.add(75, 0);
+        lut.add(85, 0); // hi
+        lut.add(105, 0);
+        lut.add(109, 0);
+        lut.add(115, 0);
+        lut.add(125, 0);
         // finish - the servos like to fight eachother
         lut.createLUT();
         return lut;
@@ -411,37 +411,18 @@ public class MainV2 extends OpMode {
     public static InterpLUT getHoodLut() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 0.25);
-        lut.add(25, 0.3);
-        lut.add(35, 0.6);
-        lut.add(45, 1);
-        lut.add(55, 1);
+        lut.add(15, 0.1);
+        lut.add(25, 0.6);
+        lut.add(35, 0.85);
+        lut.add(45, 0.95);
+        lut.add(55, 0.98);
         lut.add(65, 1);
-        lut.add(75, 1);
-        lut.add(85, 0.98);
-        lut.add(105, 1);
-        lut.add(109, 1);
-        lut.add(115, 1);
-        lut.add(125, 1);
-        // finish
-        lut.createLUT();
-        return lut; // do not lock in
-    }
-    public static InterpLUT getTransferLut() {
-        InterpLUT lut = new InterpLUT();
-        // add the data
-        lut.add(15, 1);
-        lut.add(25, 1);
-        lut.add(35, 1);
-        lut.add(45, 1);
-        lut.add(55, 0.75);
-        lut.add(65, 0.7);
-        lut.add(75, 0.);
-        lut.add(85, 0.);
-        lut.add(105, 0.);
-        lut.add(109, 0.);
-        lut.add(115, 0.);
-        lut.add(125, 0.);
+        lut.add(75, 0);
+        lut.add(85, 0);
+        lut.add(105, 0);
+        lut.add(109, 0);
+        lut.add(115, 0);
+        lut.add(125, 0);
         // finish
         lut.createLUT();
         return lut; // do not lock in

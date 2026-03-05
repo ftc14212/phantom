@@ -80,7 +80,7 @@ public class MainV2 extends OpMode {
     public static boolean debugMode = true;
     public static double turretOffset = 3; // kabam
     public static double backSpin = 0; // kaboom
-    public static double shooterOffset = -15; // kachow
+    public static double shooterOffset = -29; // kachow
     private final Prompter prompter = new Prompter(this);
     // hardware
     private TelemetryM telemetryM;
@@ -397,13 +397,13 @@ public class MainV2 extends OpMode {
         lut.add(35, 1340);
         lut.add(45, 1400);
         lut.add(55, 1475);
-        lut.add(65, 1760);
-        lut.add(75, 1745);
-        lut.add(85, 0); // hi
-        lut.add(105, 0);
-        lut.add(109, 0);
-        lut.add(115, 0);
-        lut.add(125, 0);
+        lut.add(65, 1620);
+        lut.add(75, 1700);
+        lut.add(85, 1790); // hi
+        lut.add(105, 1880); // top corner
+        lut.add(115, 1980); // far left
+        lut.add(125, 2150); // far mid
+        lut.add(138, 2150); // far right
         // finish - the servos like to fight eachother
         lut.createLUT();
         return lut;
@@ -416,13 +416,13 @@ public class MainV2 extends OpMode {
         lut.add(35, 0.85);
         lut.add(45, 0.95);
         lut.add(55, 0.98);
-        lut.add(65, 0.92);
-        lut.add(75, 1);
-        lut.add(85, 0);
-        lut.add(105, 0);
-        lut.add(109, 0);
-        lut.add(115, 0);
-        lut.add(125, 0);
+        lut.add(65, 0.98);
+        lut.add(75, 0.99);
+        lut.add(85, 1);
+        lut.add(105, 1); // top corner
+        lut.add(115, 1); // far left
+        lut.add(125, 1); // far mid
+        lut.add(138, 1); // far right
         // finish
         lut.createLUT();
         return lut; // do not lock in

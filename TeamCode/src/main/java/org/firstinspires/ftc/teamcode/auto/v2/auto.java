@@ -97,7 +97,7 @@ public class auto extends OpMode {
     boolean indexerOn = true;
     public static double turretOffsetR = 0; // kabam
     public static double turretOffsetB = 3; // kabam
-    public static double shooterOffset = -29;
+    public static double shooterOffset = -25;
     public static boolean debugMode = true;
     public static boolean redSide = false;
     public static int intakeWait = 1000;
@@ -300,7 +300,6 @@ public class auto extends OpMode {
                     timer2.resetTimer();
                     shooterSS.stopBackSpin();
                     if (shooterOn) shooterSS.shooterOn(true);
-                    if (turretOn) turretSS.turretOn(true);
                     ledCpos = 0.388;
                     intakeGateStarted = false;
                     reached = false;
@@ -310,12 +309,13 @@ public class auto extends OpMode {
                 if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.shootClosePose, 8, 8)) reached2 = true;
                 if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.shootClosePose, 8, 8)) reached2 = true;
                 if (reached2 && shootCloseStarted) {
+                    if (turretOn) turretSS.turretOn(true);
                     if (shooterR.getVelocity() >= shooterSS.getTargetVelocity()) {
                         if (!ran2) {
                             timer2.resetTimer();
                             ran2 = true;
                         }
-                        if (timer2.getElapsedTime() >= 600) {
+                        if (timer2.getElapsedTime() >= 800) {
                             if (!ran) {
                                 timer.resetTimer();
                                 FEED();

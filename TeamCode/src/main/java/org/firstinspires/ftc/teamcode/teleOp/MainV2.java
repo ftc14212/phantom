@@ -73,6 +73,7 @@ public class MainV2 extends OpMode {
     // misc
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
+    public static boolean shooterOn = true;
     boolean indexerOn = true; // rest in peace my grammy she got hit by a bazzoka
     // timers
     ElapsedTime loopTime;
@@ -177,7 +178,7 @@ public class MainV2 extends OpMode {
         // limelight3A.setPollRateHz(50);
         // limits KACHOWWWWWWWWWW
         // HELLO CARAMEL HCOLCHATE IZA
-        hood.scaleRange(0, 0.38);
+        hood.scaleRange(0, 0.37);
         pivot.scaleRange(0, 0.4);
         // turn on motor
         shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // ok now its a snowday
@@ -358,10 +359,11 @@ public class MainV2 extends OpMode {
                 gamepad1.rumble(0, 0, 100);
                 ledCpos = 0.388;
             }
-            shooterSS.shooterOn(true);
             if (turretOn) turretSS.turretOn(true);
+            shooterSS.hoodOn(true);
             indexerOn = true;
         } else if (RESET_SHOOTER_TURRET) {
+            shooterSS.hoodOn(false);
             shooterSS.shooterOn(false);
             turretSS.turretOn(false); // i could so go for a hot coca right now
             ledCpos = 0.611;
@@ -373,6 +375,7 @@ public class MainV2 extends OpMode {
             shooterVelo = 0; // ur the size oF A VELO
         }
         // shooter code
+        if(shooterOn) shooterSS.shooterOn(true);
         shooterSS.alignShooter();
         shooterSS.update(follower);
         // turret code

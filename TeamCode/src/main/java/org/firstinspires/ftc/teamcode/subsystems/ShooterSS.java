@@ -58,6 +58,7 @@ public class ShooterSS extends SubsystemBase {
     // --------------------------------
     boolean redSide = false;
     boolean shooterOn = false;
+    boolean hoodOn = true;
     boolean backSpin = false;
     double sLutMin = 0;
     double sLutMax = 0;
@@ -124,7 +125,7 @@ public class ShooterSS extends SubsystemBase {
         // update pid
         shooter.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pid);
         // shooter code
-        hood.setPosition(hoodCpos);
+        hood.setPosition(hoodOn ? hoodCpos : 0);
         shooter.setVelocity(shooterVelo);
     }
     public void setRedSide(boolean redSide) {
@@ -147,6 +148,9 @@ public class ShooterSS extends SubsystemBase {
     }
     public void shooterOn(boolean shooterOn) {
         this.shooterOn = shooterOn;
+    }
+    public void hoodOn(boolean hoodOn) {
+        this.hoodOn = hoodOn;
     }
     public void backSpin(int velo) {
         backSpin = true;

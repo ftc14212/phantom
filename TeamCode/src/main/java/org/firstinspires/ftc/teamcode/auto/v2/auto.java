@@ -9,9 +9,11 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -25,6 +27,7 @@ import com.skeletonarmy.marrow.prompts.BooleanPrompt;
 import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.auto.v2.points.BC;
 import org.firstinspires.ftc.teamcode.auto.v2.points.BF;
 import org.firstinspires.ftc.teamcode.auto.v2.points.RC;
@@ -92,9 +95,9 @@ public class auto extends OpMode {
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
     boolean indexerOn = true;
-    public static double turretOffsetR = -3; // kabam
-    public static double turretOffsetB = 8; // kabam
-    public static double shooterOffset = -15;
+    public static double turretOffsetR = 0; // kabam
+    public static double turretOffsetB = 3; // kabam
+    public static double shooterOffset = -29;
     public static boolean debugMode = true;
     public static boolean redSide = false;
     public static int intakeWait = 1000;
@@ -102,6 +105,8 @@ public class auto extends OpMode {
     public static int gateWait = 2000;
     public static int shootWait = 1300;
     DigitalChannel beams;
+    ColorRangeSensor c1;
+    ColorRangeSensor c2;
     private final Prompter prompter = new Prompter(this);
     private MainV1E.Alliance alliance = MainV1E.Alliance.RED;
     private MainV1E.StartPos startPos = MainV1E.StartPos.FAR;
@@ -310,7 +315,7 @@ public class auto extends OpMode {
                             timer2.resetTimer();
                             ran2 = true;
                         }
-                        if (timer2.getElapsedTimeSeconds() >= 1) {
+                        if (timer2.getElapsedTime() >= 600) {
                             if (!ran) {
                                 timer.resetTimer();
                                 FEED();
@@ -334,7 +339,7 @@ public class auto extends OpMode {
                             if (!intakedClose) setPathState(1);
                             else if (!intakedMid) setPathState(2);
                             else if (!intakedFar) setPathState(3);
-                            else if (matchTime.isLessThan(3)) setPathState(5);
+                            else setPathState(5);
                         }
                     }
                 }
@@ -391,7 +396,6 @@ public class auto extends OpMode {
                 if (!intakeFarStarted) {
                     reached2 = false;
                     wheelSpeed = 1;
-                    ledCpos = 0.278;
                     INTAKE();
                     follower.followPath(intakeFar, true);
                     shootCloseStarted = false;
@@ -440,6 +444,8 @@ public class auto extends OpMode {
                 break;
             case 5:
                 if (!follower.isBusy()) {
+                    shooterSS.shooterOn(false);
+                    RESET_SHOOTER_TURRET();
                     RESET_INTAKE();
                     follower.followPath(park, true);
                     setPathState(-1);
@@ -516,9 +522,9 @@ public class auto extends OpMode {
     public void INTAKE() {
         pivotCpos = 0.55;// no
         intake.setPower(1);
-        if (!beams.getState()) indexer.setPower(0);
+        if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexer.setPower(0);
         else if (indexerOn) indexer.setPower(1);
-        shooterSS.backSpin(-600);
+        shooterSS.backSpin(0);
     }
 
     public void OUTTAKE() {
@@ -541,7 +547,7 @@ public class auto extends OpMode {
         intake.setPower(1);
     }
     public void RESET_SHOOTER_TURRET() {
-        shooterSS.shooterOn(false);
+        // shooterSS.shooterOn(false);
         turretSS.turretOn(false); // i could so go for a hot coca right now
         ledCpos = 0.667;
     }
@@ -575,8 +581,6 @@ public class auto extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
         telemetryM = new TelemetryM(telemetry, debugMode);
         follower = Constants.createFollower(hardwareMap);
-        // hi
-        beams = hardwareMap.get(DigitalChannel.class, "bb"); // bby
         // gamepads
         currentGamepad1 = new Gamepad();
         currentGamepad2 = new Gamepad();
@@ -598,6 +602,10 @@ public class auto extends OpMode {
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         strips = new CachingServo(hardwareMap.get(Servo.class, "strips")); // 4x gobilda strip RGB lights
         stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
+        // sensors
+        beams = hardwareMap.get(DigitalChannel.class, "bb"); // bby
+        c1 = hardwareMap.get(ColorRangeSensor.class, "c1");
+        c2 = hardwareMap.get(ColorRangeSensor.class, "c2");
         // directions
         beams.setMode(DigitalChannel.Mode.INPUT);
         indexer.setDirection(DcMotor.Direction.REVERSE);
@@ -664,8 +672,8 @@ public class auto extends OpMode {
 
     @Override
     public void loop() {
-        Pose bluePos = new Pose(11, 137, Math.toRadians(0));
-        Pose redPos = new Pose(133, 137, Math.toRadians(0));
+        Pose bluePos = new Pose(0, 144, 135); // BYE
+        Pose redPos = new Pose(144, 144, 45);
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         turretSS.updatePID(turretPID, PIDTuneTurret.F);

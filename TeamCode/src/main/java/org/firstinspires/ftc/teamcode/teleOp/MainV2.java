@@ -12,9 +12,11 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -28,6 +30,7 @@ import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
@@ -86,6 +89,8 @@ public class MainV2 extends OpMode {
     private TelemetryM telemetryM;
     private Follower follower;
     DigitalChannel beams;
+    ColorRangeSensor c1;
+    ColorRangeSensor c2;
     // gamepads
     Gamepad currentGamepad1;
     Gamepad currentGamepad2;
@@ -129,10 +134,8 @@ public class MainV2 extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
         telemetryM = new TelemetryM(telemetry, debugMode);
         follower = Constants.createFollower(hardwareMap);
-        // Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
-        // limelight3A.setPollRateHz(50);
+
         LynxUtils.initLynx(hardwareMap);
-        beams = hardwareMap.get(DigitalChannel.class, "bb");
         // strips = hardwareMap.get(GoBildaPrismDriver.class,"strips");
         // gamepads
         currentGamepad1 = new Gamepad();
@@ -166,6 +169,12 @@ public class MainV2 extends OpMode {
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         strips = new CachingServo(hardwareMap.get(Servo.class, "strips")); // 4x gobilda strip RGB lights
         stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
+        // sensors
+        beams = hardwareMap.get(DigitalChannel.class, "bb");
+        c1 = hardwareMap.get(ColorRangeSensor.class, "c1");
+        c2 = hardwareMap.get(ColorRangeSensor.class, "c2");
+        // Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
+        // limelight3A.setPollRateHz(50);
         // limits KACHOWWWWWWWWWW
         // HELLO CARAMEL HCOLCHATE IZA
         hood.scaleRange(0, 0.38);
@@ -184,8 +193,8 @@ public class MainV2 extends OpMode {
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooterL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooterR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooterL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        shooterR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         // colors
         gamepad1.setLedColor(0, 255, 255, -1); // lalalalalalalallalallalaa
         gamepad2.setLedColor(0, 255, 0, -1);
@@ -203,7 +212,7 @@ public class MainV2 extends OpMode {
         turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
-        turretSS.setWrapAngles(180, -5180);
+        turretSS.setWrapAngles(-170, 170);
         turretSS.update(follower);
         shooterSS.update(follower);
         // misc
@@ -325,7 +334,8 @@ public class MainV2 extends OpMode {
             if (indexerOn) indexerCpos = 1;
             intake.setPower(1);
             shooterVelo = backSpin;
-            if (!beams.getState()) indexerCpos = 0;
+            if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexerCpos = 0;
+            if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c2.getDistance(DistanceUnit.CM) < 10) ledCpos = 0.667;
         }
         if (OUTTAKE) {
             indexerOn = true;// no

@@ -61,7 +61,7 @@ public class measureShooter extends LinearOpMode {
         gamepad1.setLedColor(0, 255, 255, -1);
         gamepad2.setLedColor(0, 255, 0, -1);
         hardwareMap.get(IMU.class, "imu").resetYaw();
-        TurretSS turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, MainV2.turretOffset, MainV1E.lastTurretPos);
+        TurretSS turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, MainV2.turretOffsetB, MainV1E.lastTurretPos);
         // telemetry
         telemetryM.addLine("Metrobotics Team 14212!");
         telemetryM.addLine(true, "INIT DONE!");
@@ -70,7 +70,7 @@ public class measureShooter extends LinearOpMode {
         if (opModeIsActive()) {
             while (opModeIsActive()) {
                 turretSS.updatePID(turretPID, PIDTuneTurret.F);
-                turretSS.setTurretOffset(MainV2.turretOffset);
+                turretSS.setTurretOffset(MainV2.turretOffsetB);
                 turretSS.updateTurretTpos(turretTpos);
                 turretSS.update(follower);
                 shooterL.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));

@@ -82,9 +82,10 @@ public class MainV2 extends OpMode {
     // config stuff
     public static boolean redSide; // i think about her everytime I hit the kookah
     public static boolean debugMode = true;
-    public static double turretOffset = 3; // kabam
+    public static double turretOffsetR = -15; // kabam
+    public static double turretOffsetB = 15; // kabam
     public static double backSpin = 0; // kaboom
-    public static double shooterOffset = -29; // kachow
+    public static double shooterOffset = -16; // kachow
     private final Prompter prompter = new Prompter(this);
     // hardware
     private TelemetryM telemetryM;
@@ -178,7 +179,7 @@ public class MainV2 extends OpMode {
         // limelight3A.setPollRateHz(50);
         // limits KACHOWWWWWWWWWW
         // HELLO CARAMEL HCOLCHATE IZA
-        hood.scaleRange(0, 0.37);
+        hood.scaleRange(0, 0.38);
         pivot.scaleRange(0, 0.4);
         // turn on motor
         shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // ok now its a snowday
@@ -210,7 +211,7 @@ public class MainV2 extends OpMode {
         strips.setPosition(stripsCpos = initGameStrips); // white
         pinpoint.recalibrateIMU();
         // subsystems
-        turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset, MainV1E.lastTurretPos);
+        turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffsetB, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
         turretSS.setWrapAngles(-170, 170);
@@ -269,14 +270,14 @@ public class MainV2 extends OpMode {
     @Override
     public void loop() {
         // poses
-        Pose bluePos = new Pose(0, 144, 135); // BYE
-        Pose redPos = new Pose(144, 144, 45);
+        Pose bluePos = new Pose(9, 138, 135); // BYE
+        Pose redPos = new Pose(138, 138, 45);
         // debugs
         telemetryM.setDebug(debugMode);
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         turretSS.updatePID(turretPID, PIDTuneTurret.F);
-        turretSS.setTurretOffset(turretOffset);
+        turretSS.setTurretOffset(redSide ? turretOffsetR : turretOffsetB);
         shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(shooterOffset);
         shooterSS.setPoses(bluePos, redPos); // woah
@@ -332,11 +333,11 @@ public class MainV2 extends OpMode {
         // controls
         if (INTAKE) {
             pivotCpos = 0.55;// no
-            if (indexerOn) indexerCpos = 1;
+            if (indexerOn) indexerCpos = 0.9;
             intake.setPower(1);
             shooterVelo = backSpin;
             if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexerCpos = 0;
-            if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c2.getDistance(DistanceUnit.CM) < 10) ledCpos = 0.667;
+            if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10) ledCpos = 0.667;
         }
         if (OUTTAKE) {
             indexerOn = true;// no
@@ -347,7 +348,7 @@ public class MainV2 extends OpMode {
         if (FEED) {
             indexerOn = true;
             pivotCpos = 0.38;
-            indexerCpos = 1;
+            indexerCpos = 0.9;
             intake.setPower(1);
         }
         if (ALIGN_SHOOT) {
@@ -360,10 +361,9 @@ public class MainV2 extends OpMode {
                 ledCpos = 0.388;
             }
             if (turretOn) turretSS.turretOn(true);
-            shooterSS.hoodOn(true);
+            if(shooterOn) shooterSS.shooterOn(true);
             indexerOn = true;
         } else if (RESET_SHOOTER_TURRET) {
-            shooterSS.hoodOn(false);
             shooterSS.shooterOn(false);
             turretSS.turretOn(false); // i could so go for a hot coca right now
             ledCpos = 0.611;
@@ -375,7 +375,6 @@ public class MainV2 extends OpMode {
             shooterVelo = 0; // ur the size oF A VELO
         }
         // shooter code
-        if(shooterOn) shooterSS.shooterOn(true);
         shooterSS.alignShooter();
         shooterSS.update(follower);
         // turret code
@@ -406,13 +405,13 @@ public class MainV2 extends OpMode {
         InterpLUT lut = new InterpLUT();
         // add the data
         lut.add(15, 1200); // ratatatatataa
-        lut.add(25, 1280);
-        lut.add(35, 1340);
-        lut.add(45, 1400);
-        lut.add(55, 1475);
-        lut.add(65, 1620);
-        lut.add(75, 1700);
-        lut.add(85, 1790); // hi
+        lut.add(25, 1250);
+        lut.add(35, 1350);
+        lut.add(45, 1460);
+        lut.add(55, 1520);
+        lut.add(65, 1585);
+        lut.add(75, 1620);
+        lut.add(85, 1740); // hi
         lut.add(105, 1880); // top corner
         lut.add(115, 1980); // far left
         lut.add(125, 2150); // far mid
@@ -425,12 +424,12 @@ public class MainV2 extends OpMode {
         InterpLUT lut = new InterpLUT();
         // add the data
         lut.add(15, 0.1);
-        lut.add(25, 0.6);
-        lut.add(35, 0.85);
-        lut.add(45, 0.95);
-        lut.add(55, 0.98);
-        lut.add(65, 0.98);
-        lut.add(75, 0.99);
+        lut.add(25, 0.2);
+        lut.add(35, 0.3);
+        lut.add(45, 0.6);
+        lut.add(55, 0.75);
+        lut.add(65, 0.95);
+        lut.add(75, 0.98);
         lut.add(85, 1);
         lut.add(105, 1); // top corner
         lut.add(115, 1); // far left
@@ -439,15 +438,6 @@ public class MainV2 extends OpMode {
         // finish
         lut.createLUT();
         return lut; // do not lock in
-    }
-    public double alignTurret(double x, double y, double headingDeg, Pose target) {
-        double dx = target.getX() - x;
-        double dy = target.getY() - y;
-        // angle from robot to target
-        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx));
-        // turret angle = angle to goal minus robot heading
-        double turretAngle = angleToGoal - headingDeg;
-        return redSide ?  turretAngle + turretOffset : turretAngle - turretOffset;
     }
 }
 // end byw bue

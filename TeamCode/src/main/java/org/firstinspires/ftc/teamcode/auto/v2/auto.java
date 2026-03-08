@@ -95,9 +95,9 @@ public class auto extends OpMode {
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
     boolean indexerOn = true;
-    public static double turretOffsetR = 0; // kabam
-    public static double turretOffsetB = 3; // kabam
-    public static double shooterOffset = -25;
+    public static double turretOffsetR = -8; // kabam
+    public static double turretOffsetB = 8; // kabam
+    public static double shooterOffset = -16;
     public static boolean debugMode = true;
     public static boolean redSide = false;
     public static int intakeWait = 1000;
@@ -672,8 +672,8 @@ public class auto extends OpMode {
 
     @Override
     public void loop() {
-        Pose bluePos = new Pose(0, 144, 135); // BYE
-        Pose redPos = new Pose(144, 144, 45);
+        Pose bluePos = new Pose(9, 138, 135); // BYE
+        Pose redPos = new Pose(138, 138, 45);
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         turretSS.updatePID(turretPID, PIDTuneTurret.F);

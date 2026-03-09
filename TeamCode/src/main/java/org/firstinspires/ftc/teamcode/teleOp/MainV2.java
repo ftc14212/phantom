@@ -83,7 +83,7 @@ public class MainV2 extends OpMode {
     public static boolean redSide; // i think about her everytime I hit the kookah
     public static boolean debugMode = true;
     public static double turretOffsetR = -15; // kabam
-    public static double turretOffsetB = 15; // kabam
+    public static double turretOffsetB = 10; // kabam
     public static double backSpin = 0; // kaboom
     public static double shooterOffset = -16; // kachow
     private final Prompter prompter = new Prompter(this);
@@ -383,6 +383,7 @@ public class MainV2 extends OpMode {
         turretSS.alignTurret();
         turretSS.update(follower);
         follower.update();
+
         // telemetry
         telemetryM.addLine("PHANTOM Team 14212!");
         telemetryM.addData(true, "loop times", loopTime.milliseconds());

@@ -9,7 +9,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -96,7 +95,7 @@ public class auto extends OpMode {
     public static boolean turretOn = true;
     boolean indexerOn = true;
     public static double turretOffsetR = -8; // kabam
-    public static double turretOffsetB = 8; // kabam
+    public static double turretOffsetB = 5; // kabam
     public static double shooterOffset = -16;
     public static boolean debugMode = true;
     public static boolean redSide = false;
@@ -315,7 +314,7 @@ public class auto extends OpMode {
                             timer2.resetTimer();
                             ran2 = true;
                         }
-                        if (timer2.getElapsedTime() >= 800) {
+                        if (timer2.getElapsedTime() >= 650) {
                             if (!ran) {
                                 timer.resetTimer();
                                 FEED();

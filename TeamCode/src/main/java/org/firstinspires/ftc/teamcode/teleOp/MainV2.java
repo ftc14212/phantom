@@ -116,6 +116,8 @@ public class MainV2 extends OpMode {
     private static CombinedCRServo turret; // 2x axon mini
     private static CombinedCRServo ascend; // 4x axon max
     // random
+    MainV1E.Alliance alliance;
+    MainV1E.StartPos startPos;
     // GoBildaPrismDriver strips;
     Timer gameTimer = new Timer();
     // pids
@@ -136,7 +138,6 @@ public class MainV2 extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
         telemetryM = new TelemetryM(telemetry, debugMode);
         follower = Constants.createFollower(hardwareMap);
-
         LynxUtils.initLynx(hardwareMap);
         // strips = hardwareMap.get(GoBildaPrismDriver.class,"strips");
         // gamepads
@@ -236,8 +237,8 @@ public class MainV2 extends OpMode {
     }
 
     public void onPromptsComplete() {
-        MainV1E.Alliance alliance = prompter.get("alliance");
-        MainV1E.StartPos startPos = prompter.get("start_pos");
+        alliance = prompter.get("alliance");
+        startPos = prompter.get("start_pos");
         if (startPos == MainV1E.StartPos.FAR) {
             if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(89.4, 7.8, Math.toRadians(90)));
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(new Pose(54.6, 7.8, Math.toRadians(90)));
@@ -317,7 +318,7 @@ public class MainV2 extends OpMode {
             double strafe = gamepad1.left_stick_x; // strafe
             double turn = gamepad1.right_stick_x;  // rotation
             // formula
-            double leftFrontPower = (forward + strafe + turn) * wheelSpeed; //ima strafe you out
+            double leftFrontPower = (forward + strafe + turn) * wheelSpeed; // ima strafe you out
             double leftBackPower = (forward - strafe + turn) * wheelSpeed;
             double rightFrontPower = (forward - strafe - turn) * wheelSpeed;
             double rightBackPower = (forward + strafe - turn) * wheelSpeed;
@@ -332,18 +333,22 @@ public class MainV2 extends OpMode {
         }
         // controls
         if (INTAKE) {
-            pivotCpos = 0.55;// no
+            pivotCpos = 0.55; // no
             if (indexerOn) indexerCpos = 0.9;
             intake.setPower(1);
             shooterVelo = backSpin;
             if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexerCpos = 0;
-            if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10) ledCpos = 0.667;
+            if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10)  {
+                shooterSS.hoodOn(false);
+                if(shooterOn) shooterSS.shooterOn(true);
+                ledCpos = 0.667;
+            }
         }
         if (OUTTAKE) {
-            indexerOn = true;// no
+            indexerOn = true; // no
             pivotCpos = 0.55;
             indexerCpos = -1;
-            intake.setPower(-1);// :P
+            intake.setPower(-1); // :P
         }
         if (FEED) {
             indexerOn = true;
@@ -355,11 +360,11 @@ public class MainV2 extends OpMode {
             if (shooterR.getVelocity() >= shooterSS.getTargetVelocity() - 100) {
                 gamepad1.rumble(0.8, 0.8, 1000);
                 ledCpos = 1;
-            }
-            else {
+            } else {
                 gamepad1.rumble(0, 0, 100);
                 ledCpos = 0.388;
             }
+            shooterSS.hoodOn(true);
             if (turretOn) turretSS.turretOn(true);
             if(shooterOn) shooterSS.shooterOn(true);
             indexerOn = true;
@@ -374,6 +379,19 @@ public class MainV2 extends OpMode {
             intake.setPower(0);
             shooterVelo = 0; // ur the size oF A VELO
         }
+        // fixes
+        if (gamepad2.dpadRightWasPressed()) {
+            turretOffsetR += 1;
+            turretOffsetB += 1;
+        }
+        if (gamepad2.dpadLeftWasPressed()) {
+            turretOffsetR -= 1;
+            turretOffsetB -= 1;
+        }
+        if (gamepad2.dpadDownWasReleased()) {
+            if (redSide) follower.setPose(new Pose(126, 119, Math.PI - Math.toRadians(144)));
+            else follower.setPose(new Pose(18, 119, Math.toRadians(144)));
+        }
         // shooter code
         shooterSS.alignShooter();
         shooterSS.update(follower);
@@ -383,7 +401,6 @@ public class MainV2 extends OpMode {
         turretSS.alignTurret();
         turretSS.update(follower);
         follower.update();
-
         // telemetry
         telemetryM.addLine("PHANTOM Team 14212!");
         telemetryM.addData(true, "loop times", loopTime.milliseconds());

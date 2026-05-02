@@ -12,9 +12,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
+import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.teleOp.MainV2;
-import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooter;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
@@ -61,7 +60,7 @@ public class measureShooter extends LinearOpMode {
         gamepad1.setLedColor(0, 255, 255, -1);
         gamepad2.setLedColor(0, 255, 0, -1);
         hardwareMap.get(IMU.class, "imu").resetYaw();
-        TurretSS turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, MainV2.turretOffsetB, MainV1E.lastTurretPos);
+        TurretSS_OLD turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, MainV2.turretOffsetB, MainV1E.lastTurretPos);
         // telemetry
         telemetryM.addLine("Metrobotics Team 14212!");
         telemetryM.addLine(true, "INIT DONE!");

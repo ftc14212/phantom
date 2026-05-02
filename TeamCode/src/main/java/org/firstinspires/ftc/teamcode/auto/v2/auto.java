@@ -32,8 +32,8 @@ import org.firstinspires.ftc.teamcode.auto.v2.points.BF;
 import org.firstinspires.ftc.teamcode.auto.v2.points.RC;
 import org.firstinspires.ftc.teamcode.auto.v2.points.RF;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
-import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
+import org.firstinspires.ftc.teamcode.subsystems.old.ShooterSS_OLD;
+import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.teleOp.MainV2;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
@@ -80,8 +80,8 @@ public class auto extends OpMode {
     PIDController turretPID;
     PIDFCoefficients shooterPID;
     // subsystems
-    TurretSS turretSS;
-    ShooterSS shooterSS;
+    TurretSS_OLD turretSS;
+    ShooterSS_OLD shooterSS;
     // positions
     public static double pivotCpos = 0.45;
     public static double hoodCpos = 0;
@@ -627,7 +627,7 @@ public class auto extends OpMode {
         gamepad2.setLedColor(0, 255, 0, -1);
         LynxUtils.setLynxColor(255, 0, 255);
         // subsystems
-        shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
+        shooterSS = new ShooterSS_OLD(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(MainV2.getShooterLUT(), 15.1, 124.9, MainV2.getHoodLut(), 15.1, 124.9);
         shooterSS.update(follower);
     }
@@ -648,7 +648,7 @@ public class auto extends OpMode {
         redSide = alliance == MainV1E.Alliance.RED;
         MainV2.redSide = redSide;
         MainV1E.redSideS = redSide;
-        turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, redSide ? turretOffsetR : turretOffsetB, MainV1E.lastTurretPos);
+        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, redSide ? turretOffsetR : turretOffsetB, MainV1E.lastTurretPos);
         turretSS.setRedSide(redSide);
         shooterSS.setRedSide(redSide);
         turretSS.setWrapAngles(-180, 180);

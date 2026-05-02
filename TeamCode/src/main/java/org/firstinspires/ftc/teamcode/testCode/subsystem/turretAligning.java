@@ -4,7 +4,6 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.gamepad.PanelsGamepad;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -16,8 +15,7 @@ import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.SwerveSS;
-import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
+import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
@@ -36,7 +34,7 @@ public class turretAligning extends OpMode {
     public static double ledCpos = 1;
     public static double turretTpos = 0;
     boolean redSide;
-    TurretSS turretSS;
+    TurretSS_OLD turretSS;
     TelemetryM telemetryM;
     private static CachingServo led; // 2x gobilda led lights RGB
     Follower follower;
@@ -53,7 +51,7 @@ public class turretAligning extends OpMode {
         CombinedCRServo turret = new CombinedCRServo(turret1, turret2); // 2x axon maxs
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         DcMotorEx encoder = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
-        turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, encoder, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset);
+        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, encoder, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset);
         led.setPosition(ledCpos);
         encoder.setDirection(DcMotorEx.Direction.REVERSE);
         telemetryM.update();

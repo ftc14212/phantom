@@ -2,134 +2,108 @@
  * TurretSS
  * @author David Grieas - 14212 MetroBotics
  * Turret susbsystem
- * started coding at 1/23/25  @  4:13 pm
- * finished coding at 1/23/25  @  6:20 pm
 ***/
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
+import org.firstinspires.ftc.teamcode.subsystems.enums.ShooterS;
+import org.firstinspires.ftc.teamcode.subsystems.enums.TurretS;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 
 public class TurretSS extends SubsystemBase {
-    // -------------------------
-    // VALUES STUFF
-    // -------------------------
-    int TPR;
-    double ratio;
-    double offset;
-    public double turretTpos = 0;
-    double turretCpos = 0;
-    boolean turretOn = false;
-    double lastTurretPos;
-
-    Pose bluePos = new Pose(11, 137, 0);
-    Pose redPos = new Pose(133, 137, 0);
-    Pose target = bluePos;
-
-    // -------------------------
-    // FLIPPIN HARDWARE STUFF
-    // -------------------------
-    PIDController pid;
-    CRServo turret;
-    CombinedCRServo turretC;
-    DcMotorEx encoder;
-    Follower follower = null;
-
-    // --------------------------------
-    // random okay leave me alone :C
-    // --------------------------------
-    boolean redSide = false;
-    double F;
+    // hardware
+    private final CombinedCRServo servos;
+    private final DcMotorEx encoder;
+    // data
+    private double turretCpos = 0;
+    private TurretS status;
+    private double target = 0;
+    private Follower follower = null;
+    private Pose redPos = new Pose();
+    private Pose bluePos = new Pose();
+    private Pose targetPos = bluePos;
+    private boolean redSide = false;
+    // config
+    private int tolerance = 10;
+    private PIDController pid;
+    private double offset = 0;
+    int TPR = PIDTuneTurret.TPR;
+    double ratio = PIDTuneTurret.ratio;
     int minWrap = -210;
     int maxWrap = 190;
-    boolean combined;
-
-    // -------------------------
-    // INIT THINGY
-    // -------------------------
-    public TurretSS(PIDController pid, double F, CRServo turret, DcMotorEx encoder, int TPR, double ratio) {
-        this(pid, F, turret, encoder, TPR, ratio, 0);
-    }
-    public TurretSS(PIDController pid, double F, CRServo turret, DcMotorEx encoder, int TPR, double ratio, double offset) {
-        this(pid, F, turret, encoder, TPR, ratio, offset, -999);
-    }
-    public TurretSS(PIDController pid, double F, CRServo turret, DcMotorEx encoder, int TPR, double ratio, double offset, double lastTurretPos) {
-        // vars
-        this.pid = pid;
-        this.turret = turret;
+    // init
+    public TurretSS(CombinedCRServo servos, DcMotorEx encoder, PIDController pid, double lastTurretPos) {
+        // variables
+        this.servos = servos;
         this.encoder = encoder;
-        this.TPR = TPR;
-        this.ratio = ratio;
-        this.offset = offset;
-        this.lastTurretPos = lastTurretPos;
-        this.F = F;
-        // init stuff
+        this.status = TurretS.ZERO;
+        this.pid = pid;
+        // init
         if (lastTurretPos != -999) turretCpos = lastTurretPos;
         else encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        combined = false;
     }
-
-    public TurretSS(PIDController pid, double F, CombinedCRServo turret, DcMotorEx encoder, int TPR, double ratio) {
-        this(pid, F, turret, encoder, TPR, ratio, 0);
-    }
-    public TurretSS(PIDController pid, double F, CombinedCRServo turret, DcMotorEx encoder, int TPR, double ratio, double offset) {
-        this(pid, F, turret, encoder, TPR, ratio, offset, -999);
-    }
-    public TurretSS(PIDController pid, double F, CombinedCRServo turret, DcMotorEx encoder, int TPR, double ratio, double offset, double lastTurretPos) {
-        // vars
-        this.pid = pid;
-        this.turretC = turret;
-        this.encoder = encoder;
-        this.TPR = TPR;
-        this.ratio = ratio;
-        this.offset = offset;
-        this.lastTurretPos = lastTurretPos;
-        this.F = F;
-        // init stuff
-        if (lastTurretPos != -999) turretCpos = lastTurretPos;
-        else encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        combined = true;
-    }
-    // getters
-    public double getCurrentPos() {
-        return turretCpos;
-    }
-    public double getTargetPos() {
-        return turretTpos;
-    }
-    public boolean isTurretOn() {
-        return turretOn;
-    }
-    public PIDController getPid() {
-        return pid;
-    }
-    public Pose getTargetPose() {
-        return target;
-    }
-    // -------------------------------------------------------------
-    // METHODSSSS
-    // -------------------------------------------------------------
+    // methods
     public void update(Follower follower) {
+        // status
+        if (atTarget(0)) status = TurretS.ZERO;
+        if (!atTarget() && target != 0) status = TurretS.ROTATING;
+        if (atTarget() && status == TurretS.ROTATING) status = TurretS.AT_TARGET;
+        // update
         this.follower = follower;
         // pose
-        target = redSide ? redPos : bluePos;
+        targetPos = redSide ? redPos : bluePos;
         // grab current pos
         turretCpos = (-encoder.getCurrentPosition() / (TPR * ratio)) * 360;
         // turret code
-        double error = wrap(turretTpos - turretCpos);
-        double power = pid.calculate(error) + F;
+        double error = wrap(target);
+        double power = pid.calculate(error);
         power = Math.max(-1, Math.min(1, power));
-        if (combined) turretC.setPower(power);
-        else turret.setPower(power);
+        servos.setPower(power);
+    }
+    public void align() {
+        setTarget(alignAngle());
+    }
+    private double alignAngle() {
+        double dx = targetPos.getX() - follower.getPose().getX();
+        double dy = targetPos.getY() - follower.getPose().getY();
+        // angle from robot to target
+        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx));
+        // turret angle = angle to goal minus robot heading
+        double turretAngle = Math.toDegrees(follower.getHeading()) - angleToGoal;
+        return redSide ?  turretAngle + offset : turretAngle - offset;
+    }
+    private boolean atTarget(double target) {
+        return turretCpos >= target - tolerance && turretCpos <= target + tolerance;
+    }
+    public double wrap(double angle) {
+        if (angle > maxWrap) angle -= 360;
+        if (angle < minWrap) angle += 360;
+        return angle;
+    }
+    // setters
+    public void setTolerance(int tolerance) {
+        this.tolerance = tolerance;
+    }
+    public void setTarget(double target) {
+        this.target = target;
+    }
+    public void setOffset(double offset) {
+        this.offset = offset;
+    }
+    public void setWrapAngles(int min, int max) {
+        minWrap = min;
+        maxWrap = max;
+    }
+    public void updatePID(PIDController pid) {
+        this.pid = pid;
     }
     public void setRedSide(boolean redSide) {
         this.redSide = redSide;
@@ -138,55 +112,45 @@ public class TurretSS extends SubsystemBase {
         this.bluePos = bluePos;
         this.redPos = redPos;
     }
-    public void turretOn(boolean turretOn) {
-        this.turretOn = turretOn;
+    // getters
+    public boolean atTarget() {
+        return turretCpos >= target - tolerance && turretCpos <= target + tolerance;
     }
-    public double alignTurret() {
-        return turretTpos = turretOn ? wrap(
-                alignTurret(
-                        follower.getPose().getX(),
-                        follower.getPose().getY(),
-                        Math.toDegrees(follower.getHeading()),
-                        target
-                )
-        ) : 0;
+    public double getCurrentPos() {
+        return turretCpos;
     }
-    public void updateTurretTpos(double turretTpos) {
-        this.turretTpos = turretTpos;
+    public double getTarget() {
+        return target;
     }
-    public void setTurretCpos(double turretCpos) {
-        this.turretCpos = turretCpos;
+    public PIDController getPid() {
+        return pid;
     }
-    public void setTurretOffset(double offset) {
-        this.offset = offset;
+    public Pose getTargetPose() {
+        return targetPos;
     }
-    public void setWrapAngles(int min, int max) {
-        minWrap = min;
-        maxWrap = max;
+    public int getTolerance() {
+        return tolerance;
     }
-    public void updatePID(PIDController pid, double F) {
-        this.pid = pid;
-        this.F = F;
+    public TurretS getStatus() {
+        return status;
     }
-    // -------------------------
-    // TELEMETRY FOR DEBUGGING MY AHH
-    // -------------------------
+    // telemetry
     public String telemetry() {
         return("===== Turret Telemetry =====\n" +
                 "-- Positions --\n" +
-                "Turret current pos: " + turretCpos + "\n" +
-                "Turret target pos: " + turretTpos + "\n" +
+                "Turret current pos: " + getCurrentPos() + "\n" +
+                "Turret target pos: " + getTarget() + "\n" +
                 "-- PID Values --\n" +
                 "P: " + pid.getP() + "\n" +
                 "I: " + pid.getI() + "\n" +
                 "D: " + pid.getD() + "\n" +
-                "F: " + F + "\n" +
                 "-- Values --\n" +
                 "Turret redSide: " + redSide + "\n" +
-                "Align Turret output: " + wrap(alignTurret(follower.getPose().getX(), follower.getPose().getY(), Math.toDegrees(follower.getHeading()), target)) + "\n" +
+                "Align Turret output: " + wrap(alignAngle()) + "\n" +
                 "Offset: " + offset + "\n" +
-                "Turret On: " + turretOn + "\n" +
-                "Turret raw Power" + (turret == null ? turretC.getPower() : turret.getPower()) + "\n" +
+                "Tolerance: " + getTolerance() + "\n" +
+                "Turret raw Power" + servos.getPower() + "\n" +
+                "Status: " + getStatus() + "\n" +
                 "-- Poses --\n" +
                 "Follower:" + "\n" +
                 "X: " + follower.getPose().getX() + "\n" +
@@ -200,23 +164,5 @@ public class TurretSS extends SubsystemBase {
                 "X: " + bluePos.getPose().getX() + "\n" +
                 "Y: " + bluePos.getPose().getY() + "\n" +
                 "heading: " + Math.toDegrees(bluePos.getHeading()) + "\n");
-    }
-    // -------------------------------------------------------------
-    // HELPERSSS
-    // -------------------------------------------------------------
-    private double alignTurret(double x, double y, double headingDeg, Pose target) {
-        double dx = target.getX() - x;
-        double dy = target.getY() - y;
-        // angle from robot to target
-        double angleToGoal = Math.toDegrees(Math.atan2(dy, dx));
-        // turret angle = angle to goal minus robot heading
-        double turretAngle = headingDeg - angleToGoal;
-        return redSide ?  turretAngle + offset : turretAngle - offset;
-    }
-    // wrap code
-    public double wrap(double angle) {
-        if (angle > maxWrap) angle -= 360;
-        if (angle < minWrap) angle += 360;
-        return angle;
     }
 }

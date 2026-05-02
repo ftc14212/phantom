@@ -16,10 +16,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
-import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
+import org.firstinspires.ftc.teamcode.subsystems.old.ShooterSS_OLD;
+import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.teleOp.MainV2;
-import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
@@ -50,8 +49,8 @@ public class autoStationaryRED extends OpMode {
     PIDController turretPID;
     PIDFCoefficients shooterPID;
     // subsystems
-    TurretSS turretSS;
-    ShooterSS shooterSS;
+    TurretSS_OLD turretSS;
+    ShooterSS_OLD shooterSS;
     // motors
     CachingDcMotorEx shooterL; // 6000 rpm
     CachingDcMotorEx shooterR; // 6000 rpm
@@ -213,10 +212,10 @@ public class autoStationaryRED extends OpMode {
         indexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // subsystems
-        shooterSS = new ShooterSS(shooterPID, shooterR, shooterL, hoodR, hoodL);
+        shooterSS = new ShooterSS_OLD(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(MainV2.getShooterLUT(), 15.1, 124.9, MainV2.getHoodLut(), 15.1, 124.9);
         shooterSS.update(follower);
-        turretSS = new TurretSS(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, 0, MainV1E.lastTurretPos);
+        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, 0, MainV1E.lastTurretPos);
         turretSS.setRedSide(true);
         shooterSS.setRedSide(true);
         turretSS.setWrapAngles(-180, 180);

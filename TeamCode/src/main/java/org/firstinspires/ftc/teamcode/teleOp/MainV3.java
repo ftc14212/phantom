@@ -1,8 +1,7 @@
 /***
- * MAIN V2
+ * MAIN V3
  * @author David Grieas - 14212 MetroBotics
- * coding for our V2 Phantom - feb 28th
- * started coding at 1/26/25  @  11:54 am
+ * coding for our V2.2 Phantom - june 18th
 ***/
 package org.firstinspires.ftc.teamcode.teleOp;
 
@@ -30,11 +29,12 @@ import com.skeletonarmy.marrow.prompts.Prompter;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.old.ShooterSS_OLD;
-import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
+import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
+import org.firstinspires.ftc.teamcode.utils.CombinedDcMotorEx;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 import org.firstinspires.ftc.teamcode.utils.LynxUtils;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
@@ -46,41 +46,34 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
 @Configurable
-@TeleOp(name="Main v2", group="old_ftc14212")
-public class MainV2 extends OpMode {
+@TeleOp(name="Main v3", group=".ftc14212")
+public class MainV3 extends OpMode {
     /**
-     * MAIN V2 BY DAVID
+     * MAIN V3 BY DAVID
      * @author David Grieas, Iza Sikorski - 14212 MetroBotics
     **/
     // positions
     public static double pivotCpos = 0.38;
-    public static double hoodCpos = 0;
-    public static double indexerCpos = 0;
-    public static double ascendCpos = 0;
-    public static double ledCpos = 0.611;
     public static double stripsCpos = 0.611;
     public static double turretTpos = 0;
-    public static double shooterVelo = 0; // update servos r kissing
-    public double turretCpos;
     public static double endGameStrips = 0.89;
     public static double midGameStrips = 0.7;
     public static double initGameStrips = 0.75;
     // misc
-    private double wheelSpeed = 1;
+    public static double wheelSpeed = 1;
     public static boolean turretOn = true;
     public static boolean shooterOn = true;
-    boolean indexerOn = true; // rest in peace my grammy she got hit by a bazzoka
+    boolean indexerOn = true;
     // timers
     ElapsedTime loopTime;
     // odometry
     public static boolean odoDrive = true;
     // config stuff
-    public static boolean redSide; // i think about her everytime I hit the kookah
+    public static boolean redSide;
     public static boolean debugMode = true;
-    public static double turretOffsetR = -15; // kabam
-    public static double turretOffsetB = 10; // kabam
-    public static double backSpin = 0; // kaboom
-    public static double shooterOffset = -16; // kachow
+    public static double turretOffsetR = 0;
+    public static double turretOffsetB = 0;
+    public static double shooterOffset = -16;
     private final Prompter prompter = new Prompter(this);
     // hardware
     private TelemetryM telemetryM;
@@ -100,7 +93,7 @@ public class MainV2 extends OpMode {
     CachingDcMotorEx rightRear; // 312 rpm --> 468 rpm
     CachingDcMotorEx shooterL; // 6000 rpm
     CachingDcMotorEx shooterR; // 6000 rpm
-    CachingDcMotorEx intake; // 1150 rpm --> 575 rpm
+    CachingDcMotorEx intake; // 1150 rpm --> 575 - 731 rpm
     CachingDcMotorEx indexer; // 1620 rpm --> 810 rpm
     // servos
     private static CachingServo pivot; // 1x axon max
@@ -109,18 +102,16 @@ public class MainV2 extends OpMode {
     private static CachingServo led; // 2x gobilda led lights RGB
     private static CachingServo strips; // 4x gobilda strip RGB lights
     private static CombinedCRServo turret; // 2x axon mini
-    private static CombinedCRServo ascend; // 4x axon max
     // random
     MainV1E.Alliance alliance;
     MainV1E.StartPos startPos;
-    // GoBildaPrismDriver strips;
     Timer gameTimer = new Timer();
     // pids
     PIDController turretPID;
     PIDFCoefficients shooterPID;
     // subsystems
-    TurretSS_OLD turretSS;
-    ShooterSS_OLD shooterSS; // heheheehehhehehe
+    TurretSS turretSS;
+    ShooterSS shooterSS;
     @Override
     public void init() {
         if (MainV1E.lastAutoPos == null) prompter.prompt("alliance", new OptionPrompt<>("Select Alliance", MainV1E.Alliance.RED, MainV1E.Alliance.BLUE))
@@ -134,11 +125,10 @@ public class MainV2 extends OpMode {
         telemetryM = new TelemetryM(telemetry, debugMode);
         follower = Constants.createFollower(hardwareMap);
         LynxUtils.initLynx(hardwareMap);
-        // strips = hardwareMap.get(GoBildaPrismDriver.class,"strips");
         // gamepads
         currentGamepad1 = new Gamepad();
         currentGamepad2 = new Gamepad();
-        previousGamepad1 = new Gamepad();//im hingry
+        previousGamepad1 = new Gamepad();
         previousGamepad2 = new Gamepad();
         // motors
         leftFront = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftFront")); // 312 rpm --> 468 rpm
@@ -157,13 +147,6 @@ public class MainV2 extends OpMode {
         CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1")); // 1x axon mini
         CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2")); // 1x axon mini
         turret = new CombinedCRServo(turret1, turret2); // 2x axon minis
-        /*
-        CachingCRServo aR1 = new CachingCRServo(hardwareMap.get(CRServo.class, "aR1")); // 1x axon max
-        CachingCRServo aR2 = new CachingCRServo(hardwareMap.get(CRServo.class, "aR2")); // 1x axon max
-        CachingCRServo aL1 = new CachingCRServo(hardwareMap.get(CRServo.class, "aL1")); // 1x axon max
-        CachingCRServo aL2 = new CachingCRServo(hardwareMap.get(CRServo.class, "aL2")); // 1x axon max
-        ascend = new CombinedCRServo(aR1, aR2, aL1, aL2); // 4x axon maxs
-        */
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         strips = new CachingServo(hardwareMap.get(Servo.class, "strips")); // 4x gobilda strip RGB lights
         stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
@@ -173,42 +156,35 @@ public class MainV2 extends OpMode {
         c2 = hardwareMap.get(ColorRangeSensor.class, "c2");
         // Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
         // limelight3A.setPollRateHz(50);
-        // limits KACHOWWWWWWWWWW
-        // HELLO CARAMEL HCOLCHATE IZA
+        // limits
         hood.scaleRange(0, 0.38);
         pivot.scaleRange(0, 0.4);
-        // turn on motor
-        shooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // ok now its a snowday
-        shooterL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // reverse
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
         leftRear.setDirection(DcMotorEx.Direction.REVERSE);
-        shooterR.setDirection(DcMotorEx.Direction.REVERSE); // its saturday
+        shooterR.setDirection(DcMotorEx.Direction.REVERSE);
         indexer.setDirection(DcMotorEx.Direction.REVERSE);
         // breaks
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooterL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        shooterR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // colors
-        gamepad1.setLedColor(0, 255, 255, -1); // lalalalalalalallalallalaa
+        gamepad1.setLedColor(0, 255, 255, -1);
         gamepad2.setLedColor(0, 255, 0, -1);
         LynxUtils.setLynxColor(255, 0, 255);
-        // do the strips
         // starting pos
         if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
         MainV1E.lastAutoPos = null;
-        hood.setPosition(hoodCpos = 0);
+        hood.setPosition(0);
         pivot.setPosition(pivotCpos = 0.38);
-        led.setPosition(ledCpos = 0.611); // david is mean he is mad
-        strips.setPosition(stripsCpos = initGameStrips); // white
+        led.setPosition(0.611);
+        strips.setPosition(stripsCpos = initGameStrips);
         pinpoint.recalibrateIMU();
         // subsystems
-        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffsetB, MainV1E.lastTurretPos);
-        shooterSS = new ShooterSS_OLD(shooterPID, shooterR, shooterL, hoodR, hoodL);
+        turretSS = new TurretSS(turret, indexer, turretPID, MainV1E.lastTurretPos);
+        shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
         turretSS.setWrapAngles(-170, 170);
         turretSS.update(follower);
@@ -216,9 +192,7 @@ public class MainV2 extends OpMode {
         // misc
         loopTime = new ElapsedTime();
         follower.update();
-        beams.setMode(DigitalChannel.Mode.INPUT); // im hungry
-        if (MainV1E.lastTurretPos != -999) turretSS.setTurretCpos(MainV1E.lastTurretPos);
-        else indexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        beams.setMode(DigitalChannel.Mode.INPUT);
         indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         MainV1E.lastTurretPos = -999;
         if (MainV1E.redSideS) {
@@ -227,8 +201,7 @@ public class MainV2 extends OpMode {
             shooterSS.setRedSide(true);
             MainV1E.redSideS = false;
         }
-        // reset
-        loopTime.reset(); // stupid robot stupid problems / wow guys david just left / wow hes back w the ugly computer / david is a poopy pants
+        loopTime.reset();
     }
 
     public void onPromptsComplete() {
@@ -249,11 +222,11 @@ public class MainV2 extends OpMode {
         telemetryM.addLine(true, "INIT DONE!");
         telemetryM.addData(true, "Alliance", alliance);
         telemetryM.addData(true, "Starting pos", startPos);
-        telemetryM.update(); // TELOMETRY ACTULLY
+        telemetryM.update();
     }
 
     @Override
-    public void init_loop() { // guys the robot moves
+    public void init_loop() {
         prompter.run();
     }
 
@@ -262,7 +235,6 @@ public class MainV2 extends OpMode {
         gameTimer.resetTimer();
         follower.startTeleopDrive();
     }
-
     @Override
     public void loop() {
         // poses
@@ -271,15 +243,14 @@ public class MainV2 extends OpMode {
         // debugs
         telemetryM.setDebug(debugMode);
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
-        shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
-        turretSS.updatePID(turretPID, PIDTuneTurret.F);
-        turretSS.setTurretOffset(redSide ? turretOffsetR : turretOffsetB);
-        shooterSS.updatePID(shooterPID); // woahhh
-        shooterSS.setShooterOffset(shooterOffset);
-        shooterSS.setPoses(bluePos, redPos); // woah
+        shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P, PIDTuneShooterSdk.I, PIDTuneShooterSdk.D, PIDTuneShooterSdk.F);
+        turretSS.updatePID(turretPID);
+        turretSS.setOffset(redSide ? turretOffsetR : turretOffsetB);
+        shooterSS.updatePID(shooterPID);
+        shooterSS.setOffset(shooterOffset);
+        shooterSS.setPose(bluePos, redPos);
         turretSS.setPoses(bluePos, redPos);
         // vars
-        turretCpos = (-indexer.getCurrentPosition() / (PIDTuneTurret.TPR * PIDTuneTurret.ratio)) * 360;
         if (gameTimer.getElapsedTimeSeconds() < 100) stripsCpos = midGameStrips;
         if (gameTimer.getElapsedTimeSeconds() > 100) stripsCpos = endGameStrips;
         // status
@@ -296,11 +267,7 @@ public class MainV2 extends OpMode {
         currentGamepad2.copy(gamepad2);
         // servos
         pivot.setPosition(pivotCpos);
-        // hood.setPosition(hoodCpos); // HOOD? IM IN THE GHETTO RATATATATATTAAA
-        indexer.setPower(indexerCpos);
-        led.setPosition(ledCpos);
-        strips.setPosition(stripsCpos); // go strip
-        if (!turretOn) turretSS.turretOn(false);
+        strips.setPosition(stripsCpos);
         if ((currentGamepad1.b && !previousGamepad1.b) || (currentGamepad2.b && !previousGamepad2.b)) turretOn = !turretOn;
         // field side
         if ((currentGamepad1.share && !previousGamepad1.share) || (currentGamepad2.share && !previousGamepad2.share)) redSide = !redSide;
@@ -313,7 +280,7 @@ public class MainV2 extends OpMode {
             double strafe = gamepad1.left_stick_x; // strafe
             double turn = gamepad1.right_stick_x;  // rotation
             // formula
-            double leftFrontPower = (forward + strafe + turn) * wheelSpeed; // ima strafe you out
+            double leftFrontPower = (forward + strafe + turn) * wheelSpeed;
             double leftBackPower = (forward - strafe + turn) * wheelSpeed;
             double rightFrontPower = (forward - strafe - turn) * wheelSpeed;
             double rightBackPower = (forward + strafe - turn) * wheelSpeed;
@@ -328,51 +295,45 @@ public class MainV2 extends OpMode {
         }
         // controls
         if (INTAKE) {
-            pivotCpos = 0.55; // no
-            if (indexerOn) indexerCpos = 0.9;
+            pivotCpos = 0.55;
+            if (indexerOn) indexer.setPower(0.9);
             intake.setPower(1);
-            shooterVelo = backSpin;
-            if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexerCpos = 0;
+            if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexer.setPower(0);;
             if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10)  {
-                shooterSS.hoodOn(false);
-                if(shooterOn) shooterSS.shooterOn(true);
-                ledCpos = 0.667;
+                // ledCpos = 0.667;
             }
         }
         if (OUTTAKE) {
-            indexerOn = true; // no
+            indexerOn = true;
             pivotCpos = 0.55;
-            indexerCpos = -1;
-            intake.setPower(-1); // :P
+            indexer.setPower(-1);
+            intake.setPower(-1);
         }
         if (FEED) {
             indexerOn = true;
             pivotCpos = 0.38;
-            indexerCpos = 0.9;
+            indexer.setPower(0.9);
             intake.setPower(1);
         }
         if (ALIGN_SHOOT) {
-            if (shooterR.getVelocity() >= shooterSS.getTargetVelocity() - 100) {
+            if (shooterSS.atTarget()) {
                 gamepad1.rumble(0.8, 0.8, 1000);
-                ledCpos = 1;
             } else {
                 gamepad1.rumble(0, 0, 100);
-                ledCpos = 0.388;
             }
-            shooterSS.hoodOn(true);
-            if (turretOn) turretSS.turretOn(true);
-            if(shooterOn) shooterSS.shooterOn(true);
+            if (turretOn) turretSS.align();
+            if(shooterOn) shooterSS.align();
             indexerOn = true;
         } else if (RESET_SHOOTER_TURRET) {
-            shooterSS.shooterOn(false);
-            turretSS.turretOn(false); // i could so go for a hot coca right now
-            ledCpos = 0.611;
+            shooterSS.setTarget(0);
+            shooterSS.setHoodCpos(0);
+            turretSS.setTarget(0);
         }
         if (RESET_INTAKE) {
             pivotCpos = 0.38;
-            indexerCpos = 0;
+            indexer.setPower(0);
             intake.setPower(0);
-            shooterVelo = 0; // ur the size oF A VELO
+            shooterSS.setTarget(0);
         }
         // fixes
         if (gamepad2.dpadRightWasPressed()) {
@@ -388,12 +349,9 @@ public class MainV2 extends OpMode {
             else follower.setPose(new Pose(18, 119, Math.toRadians(144)));
         }
         // shooter code
-        shooterSS.alignShooter();
         shooterSS.update(follower);
         // turret code
-        if (turretSS.alignTurret() == 0 && turretTpos != 0) turretSS.updateTurretTpos(turretTpos);
-        else if (turretSS.alignTurret() != 0) turretTpos = turretSS.turretTpos;
-        turretSS.alignTurret();
+        if (turretSS.getTarget() == 0 && turretTpos != 0) turretSS.setTarget(turretTpos);
         turretSS.update(follower);
         follower.update();
         // telemetry
@@ -411,25 +369,25 @@ public class MainV2 extends OpMode {
         telemetryM.addData(true, "redSide", redSide);
         telemetryM.addData(true, "beam breaks", !beams.getState());
         telemetryM.update();
-        loopTime.reset(); // kakkakakakkakakakakkakakakkakakkaaaa
+        loopTime.reset();
     }
 
     public static InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 1200); // ratatatatataa
+        lut.add(15, 1200);
         lut.add(25, 1250);
         lut.add(35, 1350);
         lut.add(45, 1460);
         lut.add(55, 1520);
         lut.add(65, 1585);
         lut.add(75, 1620);
-        lut.add(85, 1740); // hi
+        lut.add(85, 1740);
         lut.add(105, 1880); // top corner
         lut.add(115, 1980); // far left
         lut.add(125, 2150); // far mid
         lut.add(138, 2150); // far right
-        // finish - the servos like to fight eachother
+        // finish
         lut.createLUT();
         return lut;
     }
@@ -450,7 +408,6 @@ public class MainV2 extends OpMode {
         lut.add(138, 1); // far right
         // finish
         lut.createLUT();
-        return lut; // do not lock in
+        return lut;
     }
 }
-// end byw bue

@@ -1,181 +1,175 @@
 /***
- * TurretSS
+ * ShooterSS
  * @author David Grieas - 14212 MetroBotics
- * Turret susbsystem
- * started coding at 1/23/25  @  10:13 am
- * finished coding at 1/26/25  @  11:51 am
+ * Shooter susbsystem
 ***/
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
-import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
-import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.subsystems.enums.ShooterS;
 import org.firstinspires.ftc.teamcode.utils.CombinedDcMotorEx;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 
-import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
-import dev.frozenmilk.dairy.cachinghardware.CachingServo;
-
 public class ShooterSS extends SubsystemBase {
-    // -------------------------
-    // VALUES STUFF
-    // -------------------------
-    double shooterVelo = 0;
-    double hoodCpos = 0;
-    double shooterCpos = 0;
-    double distShooter = 0;
-    double offset = 0;
-    double backSpinVelo = 0;
+    // hardware
+    private final CombinedDcMotorEx motors;
+    private final CombinedServo hood;
+    private final Servo leds;
+    // data
+    private ShooterS status;
+    private InterpLUT shooterLUT;
+    private InterpLUT hoodLUT;
+    private double target = 0;
+    private double hoodCpos = 0;
+    private double distShooter = 0;
+    private Follower follower = null;
+    private Pose redPos = new Pose();
+    private Pose bluePos = new Pose();
+    private Pose targetPos = bluePos;
+    private boolean redSide = false;
+    // config
+    private int tolerance = 100;
+    final double LED_ERROR = 0.278;
+    final double LED_TARGET = 1;
+    final double LED_REV = 0.388;
+    final double LED_REG = 0.611;
+    private double sLutMin = 0;
+    private double sLutMax = 0;
+    private double hLutMin = 0;
+    private double hLutMax = 0;
+    private PIDFCoefficients pid;
+    private double offset = 0;
 
-    // POSES
-    Pose bluePos = new Pose(11, 137, 0);
-    Pose redPos = new Pose(133, 137, 0);
-    Pose target = bluePos;
-
-    // INTERPLUTS
-    InterpLUT shooterVeloLut = new InterpLUT();
-    InterpLUT hoodLut = new InterpLUT();
-
-    // -------------------------
-    // FLIPPIN HARDWARE STUFF
-    // -------------------------
-    PIDFCoefficients pid;
-    CombinedDcMotorEx shooter;
-    CombinedServo hood;
-    Follower follower = null;
-
-    // --------------------------------
-    // random okay leave me alone :C
-    // --------------------------------
-    boolean redSide = false;
-    boolean shooterOn = false;
-    boolean hoodOn = true;
-    boolean backSpin = false;
-    double sLutMin = 0;
-    double sLutMax = 0;
-    double hLutMin = 0;
-    double hLutMax = 0;
-
-    // -------------------------
-    // INIT THINGY
-    // -------------------------
-    public ShooterSS(PIDFCoefficients pid, CachingDcMotorEx shooter, CachingServo hood) {
+    // init
+    public ShooterSS(CombinedDcMotorEx motors, CombinedServo servos, Servo leds, PIDFCoefficients pid) {
+        // variables
+        this.motors = motors;
+        this.hood = servos;
+        this.leds = leds;
+        this.status = ShooterS.STOPPED;
         this.pid = pid;
-        this.shooter = new CombinedDcMotorEx(shooter);
-        this.hood = new CombinedServo(hood);
-    }
-    public ShooterSS(PIDFCoefficients pid, CachingDcMotorEx shooter, CachingServo hoodL, CachingServo hoodR) {
-        this.pid = pid;
-        this.shooter = new CombinedDcMotorEx(shooter);
-        this.hood = new CombinedServo(hoodL, hoodR);
-    }
-    public ShooterSS(PIDFCoefficients pid, CachingDcMotorEx shooterL, CachingDcMotorEx shooterR, CachingServo hood) {
-        this.pid = pid;
-        this.shooter = new CombinedDcMotorEx(shooterL, shooterR);
-        this.hood = new CombinedServo(hood);
-    }
-    public ShooterSS(PIDFCoefficients pid, CachingDcMotorEx shooterL, CachingDcMotorEx shooterR, CachingServo hoodL, CachingServo hoodR) {
-        this.pid = pid;
-        this.shooter = new CombinedDcMotorEx(shooterL, shooterR);
-        this.hood = new CombinedServo(hoodL, hoodR);
+        // init
+        motors.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motors.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
+    // methods
+    public void update(Follower follower) {
+        targetPos = redSide ? redPos : bluePos;
+        if (status != ShooterS.ERROR) {
+            // emergency stop if something unplugged
+            for(int i = 0; i < motors.getMotorsSize(); i++) if (status != ShooterS.STOPPED && motors.getVelocity(i) < 30 || motors.getCurrent(CurrentUnit.MILLIAMPS) == 0) status = ShooterS.ERROR;
+            // status
+            if (atTarget() && target != 0) status = ShooterS.AT_TARGET;
+            if (target > motors.getVelocity() && !atTarget()) status = ShooterS.REVVING;
+            if (motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.FLOAT && target == 0) status = ShooterS.FLOATING;
+            if (motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.BRAKE && target == 0) status = ShooterS.BRAKING;
+            if (motors.getVelocity() == 0) status = ShooterS.STOPPED;
+            // led control
+            if (status == ShooterS.AT_TARGET) leds.setPosition(LED_TARGET);
+            if (status == ShooterS.REVVING) leds.setPosition(LED_REV);
+            if (status == ShooterS.STOPPED) leds.setPosition(LED_REG);
+            // update
+            this.follower = follower;
+            motors.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pid);
+            distShooter = Math.sqrt(Math.pow((targetPos.getX() - follower.getPose().getX()), 2) + Math.pow((targetPos.getY() - follower.getPose().getY()), 2));
+            distShooter += offset;
+            // shooter code
+            hood.setPosition(hoodCpos);
+            motors.setVelocity(target);
+        } else {
+            motors.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motors.setVelocity(0);
+            leds.setPosition(LED_ERROR);
+        }
+    }
+
+    public void align() {
+        setTarget(getShooterVeloLut(distShooter));
+        setHoodCpos(getHoodLut(distShooter));
+    }
+
+    // setters
+    public void setTarget(double target) {
+        this.target = target;
+    }
+    public void setTolerance(int tolerance) {
+        this.tolerance = tolerance;
+    }
+    public void setHoodCpos(double hoodCpos) {
+        this.hoodCpos = hoodCpos;
+    }
+    public void setOffset(double offset) {
+        this.offset = offset;
+    }
+    public void setPose(Pose redPos, Pose bluePos) {
+        this.redPos = redPos;
+        this.bluePos = bluePos;
+    }
+    public void setPoses(InterpLUT shooterLUT, double sLutMin, double sLutMax, InterpLUT hoodLUT, double hLutMin, double hLutMax) {
+        this.shooterLUT = shooterLUT;
+        this.hoodLUT = hoodLUT;
+        this.sLutMin = sLutMin;
+        this.sLutMax = sLutMax;
+        this.hLutMin = hLutMin;
+        this.hLutMax = hLutMax;
+    }
+    public void setZeroPower(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
+        motors.setZeroPowerBehavior(zeroPowerBehavior);
+    }
+    public void updatePID(PIDFCoefficients pid) {
+        this.pid = pid;
+    }
+    public void setRedSide(boolean redSide) {
+        this.redSide = redSide;
+    }
     // getters
-    public double getCurrentVelocity() {
-        return shooterCpos;
+    public boolean atTarget() {
+        return motors.getVelocity() >= target - tolerance && motors.getVelocity() <= target + tolerance;
     }
-    public double getTargetVelocity() {
-        return shooterVelo;
+    public int getTolerance() {
+        return tolerance;
     }
-    public double getHoodPosition() {
+    public double getTarget() {
+        return target;
+    }
+    public double getHoodCpos() {
         return hoodCpos;
     }
     public PIDFCoefficients getPid() {
         return pid;
     }
-    public Pose getTargetPose() {
-        return target;
+    public double getVelocity() {
+        return motors.getVelocity();
+    }
+    public Pose getTargetPos() {
+        return targetPos;
     }
     public double getShooterVeloLut(double distShooter) {
-        return shooterVeloLut.get(Math.max(sLutMin + 0.1, Math.min(sLutMax - 0.1, distShooter)));
+        return shooterLUT.get(Math.max(sLutMin + 0.1, Math.min(sLutMax - 0.1, distShooter)));
     }
     public double getHoodLut(double distShooter) {
-        return hoodLut.get(Math.max(hLutMin + 0.1, Math.min(hLutMax - 0.1, distShooter)));
-    }//update the axon no no worky
-    // -------------------------------------------------------------
-    // METHODSSSS
-    // -------------------------------------------------------------
-    public void update(Follower follower) {
-        // pose
-        target = redSide ? redPos : bluePos;
-        // vars
-        this.follower = follower;
-        distShooter = redSide ? Math.sqrt(Math.pow((redPos.getX() - follower.getPose().getX()), 2) + Math.pow((redPos.getY() - follower.getPose().getY()), 2)) : Math.sqrt(Math.pow((bluePos.getX() - follower.getPose().getX()), 2) + Math.pow((bluePos.getY() - follower.getPose().getY()), 2));
-        distShooter += offset;
-        shooterCpos = shooter.getVelocity();
-        // update pid
-        shooter.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pid);
-        // shooter code
-        hood.setPosition(hoodOn ? hoodCpos : 0);
-        shooter.setVelocity(shooterVelo);
+        return hoodLUT.get(Math.max(hLutMin + 0.1, Math.min(hLutMax - 0.1, distShooter)));
     }
-    public void setRedSide(boolean redSide) {
-        this.redSide = redSide;
+    public ShooterS getStatus() {
+        return status;
     }
-    public void setShooterOffset(double offset) {
-        this.offset = offset;
-    }
-    public void setPoses(Pose bluePos, Pose redPos) {
-        this.bluePos = bluePos;
-        this.redPos = redPos;
-    }
-    public void setPoses(InterpLUT shooterVeloLut, double sLutMin, double sLutMax, InterpLUT hoodLut, double hLutMin, double hLutMax) {
-        this.shooterVeloLut = shooterVeloLut;
-        this.hoodLut = hoodLut;
-        this.sLutMin = sLutMin;
-        this.sLutMax = sLutMax;
-        this.hLutMin = hLutMin;//ur not the meta david ur a loswrt
-        this.hLutMax = hLutMax;
-    }
-    public void shooterOn(boolean shooterOn) {
-        this.shooterOn = shooterOn;
-    }
-    public void hoodOn(boolean hoodOn) {
-        this.hoodOn = hoodOn;
-    }
-    public void backSpin(int velo) {
-        backSpin = true;
-        backSpinVelo = velo;
-    }
-    public void stopBackSpin() {
-        backSpin = false;
-        backSpinVelo = 0;
-    }
-    public void alignShooter() {
-        shooterVelo = shooterOn ? getShooterVeloLut(distShooter) : backSpin ? backSpinVelo : 0;
-        hoodCpos = shooterOn ? getHoodLut(distShooter) : 0;
-    }
-    public void updatePID(PIDFCoefficients pid) {
-        this.pid = pid;
-    }
-    // -------------------------
-    // TELEMETRY FOR DEBUGGING MY AHH
-    // -------------------------
+    // telemetry
     public String telemetry() {
         return("===== Shooter Telemetry =====\n" +
                 "-- Positions --\n" +
-                "Shooter current pos: " + shooterCpos + "\n" +
-                "Hood current pos: " + hoodCpos + "\n" +
-                "Shooter target pos: " + shooterVelo + "\n" +
+                "Shooter velocity: " + getVelocity() + "\n" +
+                "Hood current pos: " + getHoodCpos() + "\n" +
+                "Shooter target velocity: " + getTarget() + "\n" +
                 "Distance from target: " + distShooter + "\n" +
                 "-- PID Values --\n" +
                 "P: " + pid.p + "\n" +
@@ -187,7 +181,13 @@ public class ShooterSS extends SubsystemBase {
                 "Align hood: " + getHoodLut(distShooter) + "\n" +
                 "Align shooter: " + getShooterVeloLut(distShooter) + "\n" +
                 "Offset: " + offset + "\n" +
-                "Shooter On: " + shooterOn + "\n" +
+                "Tolerance: " + getTolerance() + "\n" +
+                "Status: " + getStatus() + "\n" +
+                "-- Motor Data --\n" +
+                "Shooter 1 velocity: " + motors.getVelocity(0) + "\n" +
+                "Shooter 1 current: " + motors.getCurrent(0, CurrentUnit.MILLIAMPS) + "\n" +
+                "Shooter 2 velocity: " + motors.getVelocity(1) + "\n" +
+                "Shooter 2 current: " + motors.getCurrent(0, CurrentUnit.MILLIAMPS) + "\n" +
                 "-- Poses --\n" +
                 "Follower:" + "\n" +
                 "X: " + follower.getPose().getX() + "\n" +

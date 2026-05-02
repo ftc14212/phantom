@@ -162,4 +162,7 @@ public class CombinedDcMotorEx {
     public boolean isMotorEnabled(int index) {
         return motors.get(index).isMotorEnabled();
     }
+    public int getMotorsSize() {
+        return motors.size();
+    }
 }

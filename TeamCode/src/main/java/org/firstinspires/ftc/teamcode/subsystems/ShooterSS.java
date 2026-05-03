@@ -18,19 +18,23 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.subsystems.enums.ShooterS;
 import org.firstinspires.ftc.teamcode.utils.CombinedDcMotorEx;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
+import org.firstinspires.ftc.teamcode.utils.SOTM;
 
 public class ShooterSS extends SubsystemBase {
     // hardware
     private final CombinedDcMotorEx motors;
     private final CombinedServo hood;
     private final Servo leds;
+    private final SOTM sotm = new SOTM();
     // data
     private ShooterS status;
-    private InterpLUT shooterLUT;
+    private ShooterS lastStatus;
+    private static InterpLUT shooterLUT;
     private InterpLUT hoodLUT;
     private double target = 0;
     private double hoodCpos = 0;
     private double distShooter = 0;
+    private double distSOTM = 0;
     private Follower follower = null;
     private Pose redPos = new Pose();
     private Pose bluePos = new Pose();
@@ -38,12 +42,12 @@ public class ShooterSS extends SubsystemBase {
     private boolean redSide = false;
     // config
     private int tolerance = 100;
-    final double LED_ERROR = 0.278;
-    final double LED_TARGET = 1;
-    final double LED_REV = 0.388;
-    final double LED_REG = 0.611;
-    private double sLutMin = 0;
-    private double sLutMax = 0;
+    public static double LED_ERROR = 0.278;
+    public static double LED_TARGET = 1;
+    public static double LED_REV = 0.388;
+    public static double LED_REG = 0.611;
+    private static double sLutMin = 0;
+    private static double sLutMax = 0;
     private double hLutMin = 0;
     private double hLutMax = 0;
     private PIDFCoefficients pid;
@@ -56,6 +60,7 @@ public class ShooterSS extends SubsystemBase {
         this.hood = servos;
         this.leds = leds;
         this.status = ShooterS.STOPPED;
+        this.lastStatus = null;
         this.pid = pid;
         // init
         motors.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -75,14 +80,14 @@ public class ShooterSS extends SubsystemBase {
             if (motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.BRAKE && target == 0) status = ShooterS.BRAKING;
             if (motors.getVelocity() == 0) status = ShooterS.STOPPED;
             // led control
-            if (status == ShooterS.AT_TARGET) leds.setPosition(LED_TARGET);
-            if (status == ShooterS.REVVING) leds.setPosition(LED_REV);
-            if (status == ShooterS.STOPPED) leds.setPosition(LED_REG);
+            updateLEDs();
             // update
             this.follower = follower;
+            sotm.updateVelocity(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
             motors.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pid);
             distShooter = Math.sqrt(Math.pow((targetPos.getX() - follower.getPose().getX()), 2) + Math.pow((targetPos.getY() - follower.getPose().getY()), 2));
             distShooter += offset;
+            distSOTM = sotm.computeCompensatedDistance(follower.getPose(), targetPos, shooterLUT) + offset;
             // shooter code
             hood.setPosition(hoodCpos);
             motors.setVelocity(target);
@@ -93,14 +98,42 @@ public class ShooterSS extends SubsystemBase {
         }
     }
 
+    private void updateLEDs() {
+        if (lastStatus != null) if (status == lastStatus) return;
+        switch (status) {
+            case STOPPED:
+                leds.setPosition(LED_REG);
+                break;
+            case AT_TARGET:
+                leds.setPosition(LED_TARGET);
+                break;
+            case REVVING:
+                leds.setPosition(LED_REV);
+                break;
+        }
+        lastStatus = status;
+    }
+
     public void align() {
         setTarget(getShooterVeloLut(distShooter));
         setHoodCpos(getHoodLut(distShooter));
     }
 
+    public void sotm() {
+        setTarget(getShooterVeloLut(distSOTM));
+        setHoodCpos(getHoodLut(distSOTM));
+    }
+
     // setters
     public void setTarget(double target) {
         this.target = target;
+    }
+    public void setLeds(double ledCpos) {
+        leds.setPosition(ledCpos);
+    }
+    public void reset() {
+        setTarget(0);
+        setHoodCpos(0);
     }
     public void setTolerance(int tolerance) {
         this.tolerance = tolerance;
@@ -116,10 +149,10 @@ public class ShooterSS extends SubsystemBase {
         this.bluePos = bluePos;
     }
     public void setPoses(InterpLUT shooterLUT, double sLutMin, double sLutMax, InterpLUT hoodLUT, double hLutMin, double hLutMax) {
-        this.shooterLUT = shooterLUT;
+        ShooterSS.shooterLUT = shooterLUT;
         this.hoodLUT = hoodLUT;
-        this.sLutMin = sLutMin;
-        this.sLutMax = sLutMax;
+        ShooterSS.sLutMin = sLutMin;
+        ShooterSS.sLutMax = sLutMax;
         this.hLutMin = hLutMin;
         this.hLutMax = hLutMax;
     }
@@ -154,7 +187,7 @@ public class ShooterSS extends SubsystemBase {
     public Pose getTargetPos() {
         return targetPos;
     }
-    public double getShooterVeloLut(double distShooter) {
+    public static double getShooterVeloLut(double distShooter) {
         return shooterLUT.get(Math.max(sLutMin + 0.1, Math.min(sLutMax - 0.1, distShooter)));
     }
     public double getHoodLut(double distShooter) {
@@ -170,16 +203,20 @@ public class ShooterSS extends SubsystemBase {
                 "Shooter velocity: " + getVelocity() + "\n" +
                 "Hood current pos: " + getHoodCpos() + "\n" +
                 "Shooter target velocity: " + getTarget() + "\n" +
-                "Distance from target: " + distShooter + "\n" +
                 "-- PID Values --\n" +
                 "P: " + pid.p + "\n" +
                 "I: " + pid.i + "\n" +
                 "D: " + pid.d + "\n" +
                 "F: " + pid.f + "\n" +
-                "-- Values --\n" +
-                "Shooter redSide: " + redSide + "\n" +
+                "-- Outputs --\n" +
                 "Align hood: " + getHoodLut(distShooter) + "\n" +
                 "Align shooter: " + getShooterVeloLut(distShooter) + "\n" +
+                "SOTM hood: " + getHoodLut(distSOTM) + "\n" +
+                "SOTM shooter: " + getShooterVeloLut(distSOTM) + "\n" +
+                "Distance from target: " + distShooter + "\n" +
+                "SOTM Distance from target: " + distSOTM + "\n" +
+                "-- Values --\n" +
+                "Shooter redSide: " + redSide + "\n" +
                 "Offset: " + offset + "\n" +
                 "Tolerance: " + getTolerance() + "\n" +
                 "Status: " + getStatus() + "\n" +
@@ -193,13 +230,13 @@ public class ShooterSS extends SubsystemBase {
                 "X: " + follower.getPose().getX() + "\n" +
                 "Y: " + follower.getPose().getY() + "\n" +
                 "heading: " + Math.toDegrees(follower.getHeading()) + "\n" +
-                "\nRed pos:" + "\n" +
-                "X: " + redPos.getPose().getX() + "\n" +
-                "Y: " + redPos.getPose().getY() + "\n" +
-                "heading: " + Math.toDegrees(redPos.getHeading()) + "\n" +
-                "\nBlue pos:" + "\n" +
-                "X: " + bluePos.getPose().getX() + "\n" +
-                "Y: " + bluePos.getPose().getY() + "\n" +
-                "heading: " + Math.toDegrees(bluePos.getHeading()) + "\n");
+                "\nSOTM pos:" + "\n" +
+                "X: " + sotm.predictRobotPose(follower.getPose()).getX() + "\n" +
+                "Y: " + sotm.predictRobotPose(follower.getPose()).getY() + "\n" +
+                "heading: " + Math.toDegrees(sotm.predictRobotPose(follower.getPose()).getHeading()) + "\n" +
+                "\nTarget Goal pos:" + "\n" +
+                "X: " + targetPos.getPose().getX() + "\n" +
+                "Y: " + targetPos.getPose().getY() + "\n" +
+                "heading: " + Math.toDegrees(targetPos.getHeading()) + "\n");
     }
 }

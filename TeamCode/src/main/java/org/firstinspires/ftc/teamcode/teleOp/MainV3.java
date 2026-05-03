@@ -238,8 +238,8 @@ public class MainV3 extends OpMode {
     @Override
     public void loop() {
         // poses
-        Pose bluePos = new Pose(9, 138, 135); // BYE
-        Pose redPos = new Pose(138, 138, 45);
+        Pose bluePos = new Pose(6, 138); // BYE
+        Pose redPos = new Pose(138, 138);
         // debugs
         telemetryM.setDebug(debugMode);
         turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
@@ -325,15 +325,14 @@ public class MainV3 extends OpMode {
             if(shooterOn) shooterSS.align();
             indexerOn = true;
         } else if (RESET_SHOOTER_TURRET) {
-            shooterSS.setTarget(0);
-            shooterSS.setHoodCpos(0);
-            turretSS.setTarget(0);
+            shooterSS.reset();
+            turretSS.reset();
         }
         if (RESET_INTAKE) {
             pivotCpos = 0.38;
             indexer.setPower(0);
             intake.setPower(0);
-            shooterSS.setTarget(0);
+            shooterSS.reset();
         }
         // fixes
         if (gamepad2.dpadRightWasPressed()) {

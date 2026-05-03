@@ -12,15 +12,16 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
-import org.firstinspires.ftc.teamcode.subsystems.enums.ShooterS;
 import org.firstinspires.ftc.teamcode.subsystems.enums.TurretS;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
+import org.firstinspires.ftc.teamcode.utils.SOTM;
 
 public class TurretSS extends SubsystemBase {
     // hardware
     private final CombinedCRServo servos;
     private final DcMotorEx encoder;
+    private final SOTM sotm = new SOTM();
     // data
     private double turretCpos = 0;
     private TurretS status;
@@ -58,6 +59,7 @@ public class TurretSS extends SubsystemBase {
         if (atTarget() && status == TurretS.ROTATING) status = TurretS.AT_TARGET;
         // update
         this.follower = follower;
+        sotm.updateVelocity(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
         // pose
         targetPos = redSide ? redPos : bluePos;
         // grab current pos
@@ -68,9 +70,6 @@ public class TurretSS extends SubsystemBase {
         power = Math.max(-1, Math.min(1, power));
         servos.setPower(power);
     }
-    public void align() {
-        setTarget(alignAngle());
-    }
     private double alignAngle() {
         double dx = targetPos.getX() - follower.getPose().getX();
         double dy = targetPos.getY() - follower.getPose().getY();
@@ -79,6 +78,9 @@ public class TurretSS extends SubsystemBase {
         // turret angle = angle to goal minus robot heading
         double turretAngle = Math.toDegrees(follower.getHeading()) - angleToGoal;
         return redSide ?  turretAngle + offset : turretAngle - offset;
+    }
+    private double sotmAngle() {
+        return sotm.computeTurretAngle(follower.getPose(), targetPos);
     }
     private boolean atTarget(double target) {
         return turretCpos >= target - tolerance && turretCpos <= target + tolerance;
@@ -89,11 +91,20 @@ public class TurretSS extends SubsystemBase {
         return angle;
     }
     // setters
+    public void align() {
+        setTarget(alignAngle());
+    }
+    public void sotm() {
+        setTarget(sotmAngle());
+    }
     public void setTolerance(int tolerance) {
         this.tolerance = tolerance;
     }
     public void setTarget(double target) {
         this.target = target;
+    }
+    public void reset() {
+        setTarget(0);
     }
     public void setOffset(double offset) {
         this.offset = offset;
@@ -146,23 +157,25 @@ public class TurretSS extends SubsystemBase {
                 "D: " + pid.getD() + "\n" +
                 "-- Values --\n" +
                 "Turret redSide: " + redSide + "\n" +
-                "Align Turret output: " + wrap(alignAngle()) + "\n" +
                 "Offset: " + offset + "\n" +
                 "Tolerance: " + getTolerance() + "\n" +
-                "Turret raw Power" + servos.getPower() + "\n" +
                 "Status: " + getStatus() + "\n" +
+                "-- Outputs --\n" +
+                "Align Turret output: " + wrap(alignAngle()) + "\n" +
+                "SOTM output: " + wrap(sotmAngle()) + "\n" +
+                "Turret raw Power" + servos.getPower() + "\n" +
                 "-- Poses --\n" +
                 "Follower:" + "\n" +
                 "X: " + follower.getPose().getX() + "\n" +
                 "Y: " + follower.getPose().getY() + "\n" +
                 "heading: " + Math.toDegrees(follower.getHeading()) + "\n" +
-                "\nRed pos:" + "\n" +
-                "X: " + redPos.getPose().getX() + "\n" +
-                "Y: " + redPos.getPose().getY() + "\n" +
-                "heading: " + Math.toDegrees(redPos.getHeading()) + "\n" +
-                "\nBlue pos:" + "\n" +
-                "X: " + bluePos.getPose().getX() + "\n" +
-                "Y: " + bluePos.getPose().getY() + "\n" +
-                "heading: " + Math.toDegrees(bluePos.getHeading()) + "\n");
+                "\nSOTM pos:" + "\n" +
+                "X: " + sotm.predictRobotPose(follower.getPose()).getX() + "\n" +
+                "Y: " + sotm.predictRobotPose(follower.getPose()).getY() + "\n" +
+                "heading: " + Math.toDegrees(sotm.predictRobotPose(follower.getPose()).getHeading()) + "\n" +
+                "\nTarget Goal pos:" + "\n" +
+                "X: " + targetPos.getPose().getX() + "\n" +
+                "Y: " + targetPos.getPose().getY() + "\n" +
+                "heading: " + Math.toDegrees(targetPos.getHeading()) + "\n");
     }
 }

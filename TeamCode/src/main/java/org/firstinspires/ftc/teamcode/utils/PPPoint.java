@@ -46,6 +46,34 @@ public class PPPoint {
         }
     }
 
+    public static class pose {
+        public double x;
+        public double y;
+        public double heading;
+        public pose(double x, double y, double heading) {
+            this.x = x;
+            this.y = y;
+            this.heading = heading;
+        }
+        public pose(double x, double y) {
+            this.x = x;
+            this.y = y;
+            this.heading = 0;
+        }
+        public Pose getPose() {
+            return new Pose(x, y, heading);
+        }
+        public double getX() {
+            return x;
+        }
+        public double getY() {
+            return y;
+        }
+        public double getHeading() {
+            return heading;
+        }
+    }
+
     public static class beizerCurve {
         public double startPointX;
         public double startPointY;

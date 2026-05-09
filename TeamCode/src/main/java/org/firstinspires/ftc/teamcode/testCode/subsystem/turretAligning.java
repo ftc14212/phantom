@@ -15,9 +15,11 @@ import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
+import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
+import org.firstinspires.ftc.teamcode.utils.CombinedGamepad;
+import org.firstinspires.ftc.teamcode.utils.PPPoint;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 import org.firstinspires.ftc.teamcode.vars.MainV1E;
 
@@ -31,13 +33,13 @@ public class turretAligning extends OpMode {
     private final Prompter prompter = new Prompter(this);
     public boolean debugMode = true;
     public static double turretOffset = 0;
-    public static double ledCpos = 1;
-    public static double turretTpos = 0;
     boolean redSide;
-    TurretSS_OLD turretSS;
+    TurretSS turretSS;
     TelemetryM telemetryM;
-    private static CachingServo led; // 2x gobilda led lights RGB
+    CachingServo led; // 2x gobilda led lights RGB
     Follower follower;
+    public static PPPoint.pose bluePos = new PPPoint.pose(6, 138);
+    public static PPPoint.pose redPos = new PPPoint.pose(6, 138);
     @Override
     public void init() {
         prompter.prompt("alliance", new OptionPrompt<>("Select Alliance", MainV1E.Alliance.RED, MainV1E.Alliance.BLUE))
@@ -51,9 +53,10 @@ public class turretAligning extends OpMode {
         CombinedCRServo turret = new CombinedCRServo(turret1, turret2); // 2x axon maxs
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         DcMotorEx encoder = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
-        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, encoder, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffset);
-        led.setPosition(ledCpos);
-        encoder.setDirection(DcMotorEx.Direction.REVERSE);
+        led.setPosition(1);
+        turretSS = new TurretSS(turret, encoder, turretPID, MainV1E.lastTurretPos);
+        turretSS.setWrapAngles(-170, 170);
+        turretSS.update(follower);
         telemetryM.update();
     }
 
@@ -70,6 +73,8 @@ public class turretAligning extends OpMode {
         }
         redSide = alliance == MainV1E.Alliance.RED;
         turretSS.setRedSide(redSide);
+        if (redSide) led.setPosition(0.278);
+        else led.setPosition(0.611);
         telemetryM.addLine("PHANTOM Team 14212!");
         telemetryM.addLine(true, "INIT DONE!");
         telemetryM.addData(true, "Alliance", alliance);
@@ -90,16 +95,18 @@ public class turretAligning extends OpMode {
     @Override
     public void loop() {
         Gamepad gamepad1p = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
-        if (turretSS.alignTurret() == 0 && turretTpos != 0) turretSS.updateTurretTpos(turretTpos);
-        else if (turretSS.alignTurret() != 0) turretTpos = turretSS.turretTpos;
+        CombinedGamepad gamepad1 = new CombinedGamepad(this.gamepad1, gamepad1p);
+        // poses
+        follower.setTeleOpDrive(-gamepad1.leftStickY(), -gamepad1.leftStickX(), -gamepad1.rightStickX(), true);
+        turretSS.setOffset(turretOffset);
+        turretSS.setPoses(bluePos.getPose(), redPos.getPose());
         turretSS.update(follower);
-        if (gamepad1.left_bumper) {
-            ledCpos = 0.388;
-            turretSS.alignTurret();
+        if (gamepad1.leftBumper() || gamepad1p.left_bumper) {
+            turretSS.align();
+            led.setPosition(0.388);
         } else {
-            if (redSide) ledCpos = 0.278;
-            else ledCpos = 0.611;
+            led.setPosition(redSide ? 0.278 : 0.611);
+            turretSS.reset();
         }
         telemetryM.addLine(turretSS.telemetry());
         telemetryM.update();

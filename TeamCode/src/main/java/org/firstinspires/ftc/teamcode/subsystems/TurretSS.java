@@ -23,7 +23,7 @@ public class TurretSS extends SubsystemBase {
     private final DcMotorEx encoder;
     private final SOTM sotm = new SOTM();
     // data
-    private double turretCpos = 0;
+    private double currentAngle = 0;
     private TurretS status;
     private double target = 0;
     private Follower follower = null;
@@ -34,11 +34,12 @@ public class TurretSS extends SubsystemBase {
     // config
     private int tolerance = 10;
     private PIDController pid;
+    private double kF = PIDTuneTurret.F;
     private double offset = 0;
-    int TPR = PIDTuneTurret.TPR;
-    double ratio = PIDTuneTurret.ratio;
-    int minWrap = -210;
-    int maxWrap = 190;
+    private final double TPR = PIDTuneTurret.TPR;
+    private final double ratio = PIDTuneTurret.ratio;
+    private int minWrap = -210;
+    private int maxWrap = 190;
     // init
     public TurretSS(CombinedCRServo servos, DcMotorEx encoder, PIDController pid, double lastTurretPos) {
         // variables
@@ -47,7 +48,7 @@ public class TurretSS extends SubsystemBase {
         this.status = TurretS.ZERO;
         this.pid = pid;
         // init
-        if (lastTurretPos != -999) turretCpos = lastTurretPos;
+        if (lastTurretPos != -999) currentAngle = lastTurretPos;
         else encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
@@ -55,20 +56,23 @@ public class TurretSS extends SubsystemBase {
     public void update(Follower follower) {
         // status
         if (atTarget(0)) status = TurretS.ZERO;
-        if (!atTarget() && target != 0) status = TurretS.ROTATING;
-        if (atTarget() && status == TurretS.ROTATING) status = TurretS.AT_TARGET;
+        else if (atTarget()) status = TurretS.AT_TARGET;
+        else status = TurretS.ROTATING;
         // update
         this.follower = follower;
         sotm.updateVelocity(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
         // pose
         targetPos = redSide ? redPos : bluePos;
         // grab current pos
-        turretCpos = (-encoder.getCurrentPosition() / (TPR * ratio)) * 360;
+        currentAngle = (-encoder.getCurrentPosition() / (TPR * ratio)) * 360;
         // turret code
-        double error = wrap(target);
-        double power = pid.calculate(error);
+        double error = wrap(target - currentAngle);
+        double ff = 0;
+        if (Math.abs(error) > tolerance) ff = Math.signum(error) * kF;
+        double power = pid.calculate(error) + ff;
         power = Math.max(-1, Math.min(1, power));
-        servos.setPower(power);
+        if (Math.abs(power) > 0.03) servos.setPower(power);
+        else servos.setPower(0);
     }
     private double alignAngle() {
         double dx = targetPos.getX() - follower.getPose().getX();
@@ -83,11 +87,11 @@ public class TurretSS extends SubsystemBase {
         return sotm.computeTurretAngle(follower.getPose(), targetPos);
     }
     private boolean atTarget(double target) {
-        return turretCpos >= target - tolerance && turretCpos <= target + tolerance;
+        return Math.abs(wrap(target - currentAngle)) <= tolerance;
     }
     public double wrap(double angle) {
-        if (angle > maxWrap) angle -= 360;
-        if (angle < minWrap) angle += 360;
+        while (angle > maxWrap) angle -= 360;
+        while (angle < minWrap) angle += 360;
         return angle;
     }
     // setters
@@ -101,7 +105,7 @@ public class TurretSS extends SubsystemBase {
         this.tolerance = tolerance;
     }
     public void setTarget(double target) {
-        this.target = target;
+        this.target = wrap(target);
     }
     public void reset() {
         setTarget(0);
@@ -125,10 +129,10 @@ public class TurretSS extends SubsystemBase {
     }
     // getters
     public boolean atTarget() {
-        return turretCpos >= target - tolerance && turretCpos <= target + tolerance;
+        return Math.abs(wrap(target - currentAngle)) <= tolerance;
     }
     public double getCurrentPos() {
-        return turretCpos;
+        return currentAngle;
     }
     public double getTarget() {
         return target;
@@ -174,8 +178,8 @@ public class TurretSS extends SubsystemBase {
                 "Y: " + sotm.predictRobotPose(follower.getPose()).getY() + "\n" +
                 "heading: " + Math.toDegrees(sotm.predictRobotPose(follower.getPose()).getHeading()) + "\n" +
                 "\nTarget Goal pos:" + "\n" +
-                "X: " + targetPos.getPose().getX() + "\n" +
-                "Y: " + targetPos.getPose().getY() + "\n" +
+                "X: " + targetPos.getX() + "\n" +
+                "Y: " + targetPos.getY() + "\n" +
                 "heading: " + Math.toDegrees(targetPos.getHeading()) + "\n");
     }
 }

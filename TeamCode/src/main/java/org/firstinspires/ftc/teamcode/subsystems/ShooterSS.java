@@ -72,19 +72,24 @@ public class ShooterSS extends SubsystemBase {
         targetPos = redSide ? redPos : bluePos;
         if (status != ShooterS.ERROR) {
             // emergency stop if something unplugged
-            for(int i = 0; i < motors.getMotorsSize(); i++) if (status != ShooterS.STOPPED && motors.getVelocity(i) < 30 || motors.getCurrent(CurrentUnit.MILLIAMPS) == 0) status = ShooterS.ERROR;
+            for(int i = 0; i < motors.getMotorsSize(); i++)
+                if (status != ShooterS.STOPPED &&
+                    target > 0 &&
+                    motors.getVelocity(i) < 30 &&
+                    motors.getCurrent(i, CurrentUnit.MILLIAMPS) < 50
+                ) status = ShooterS.ERROR;
             // status
-            if (atTarget() && target != 0) status = ShooterS.AT_TARGET;
-            if (target > motors.getVelocity() && !atTarget()) status = ShooterS.REVVING;
-            if (motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.FLOAT && target == 0) status = ShooterS.FLOATING;
-            if (motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.BRAKE && target == 0) status = ShooterS.BRAKING;
-            if (motors.getVelocity() == 0) status = ShooterS.STOPPED;
+            if (target == 0) {
+                if (motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.FLOAT) status = ShooterS.FLOATING;
+                else status = ShooterS.BRAKING;
+            } else if (atTarget()) status = ShooterS.AT_TARGET;
+            else status = ShooterS.REVVING;
+            if (Math.abs(motors.getVelocity()) < 10 && target == 0) status = ShooterS.STOPPED;
             // led control
             updateLEDs();
             // update
             this.follower = follower;
             sotm.updateVelocity(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
-            motors.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pid);
             distShooter = Math.sqrt(Math.pow((targetPos.getX() - follower.getPose().getX()), 2) + Math.pow((targetPos.getY() - follower.getPose().getY()), 2));
             distShooter += offset;
             distSOTM = sotm.computeCompensatedDistance(follower.getPose(), targetPos, shooterLUT) + offset;
@@ -161,6 +166,10 @@ public class ShooterSS extends SubsystemBase {
     }
     public void updatePID(PIDFCoefficients pid) {
         this.pid = pid;
+        motors.setPIDFCoefficients(
+                DcMotor.RunMode.RUN_USING_ENCODER,
+                pid
+        );
     }
     public void setRedSide(boolean redSide) {
         this.redSide = redSide;
@@ -224,7 +233,7 @@ public class ShooterSS extends SubsystemBase {
                 "Shooter 1 velocity: " + motors.getVelocity(0) + "\n" +
                 "Shooter 1 current: " + motors.getCurrent(0, CurrentUnit.MILLIAMPS) + "\n" +
                 "Shooter 2 velocity: " + motors.getVelocity(1) + "\n" +
-                "Shooter 2 current: " + motors.getCurrent(0, CurrentUnit.MILLIAMPS) + "\n" +
+                "Shooter 2 current: " + motors.getCurrent(1, CurrentUnit.MILLIAMPS) + "\n" +
                 "-- Poses --\n" +
                 "Follower:" + "\n" +
                 "X: " + follower.getPose().getX() + "\n" +
@@ -235,8 +244,8 @@ public class ShooterSS extends SubsystemBase {
                 "Y: " + sotm.predictRobotPose(follower.getPose()).getY() + "\n" +
                 "heading: " + Math.toDegrees(sotm.predictRobotPose(follower.getPose()).getHeading()) + "\n" +
                 "\nTarget Goal pos:" + "\n" +
-                "X: " + targetPos.getPose().getX() + "\n" +
-                "Y: " + targetPos.getPose().getY() + "\n" +
+                "X: " + targetPos.getX() + "\n" +
+                "Y: " + targetPos.getY() + "\n" +
                 "heading: " + Math.toDegrees(targetPos.getHeading()) + "\n");
     }
 }

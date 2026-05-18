@@ -47,14 +47,13 @@ public class turretAligning extends OpMode {
                 .onComplete(this::onPromptsComplete);
         telemetryM = new TelemetryM(telemetry, debugMode);
         follower = Constants.createFollower(hardwareMap);
-        PIDController turretPID = new PIDController(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1")); // 1x axon max
         CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2")); // 1x axon max
         CombinedCRServo turret = new CombinedCRServo(turret1, turret2); // 2x axon maxs
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         DcMotorEx encoder = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
         led.setPosition(1);
-        turretSS = new TurretSS(turret, encoder, turretPID, MainV1E.lastTurretPos);
+        turretSS = new TurretSS(turret, encoder, PIDTuneTurret.FAR, PIDTuneTurret.CLOSE, MainV1E.lastTurretPos);
         turretSS.setWrapAngles(-170, 170);
         turretSS.update(follower);
         telemetryM.update();

@@ -574,7 +574,7 @@ public class auto extends OpMode {
         loopTime = new ElapsedTime();
         loopTime.reset();
         // hardware
-        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
+        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
@@ -648,7 +648,7 @@ public class auto extends OpMode {
         redSide = alliance == MainV1E.Alliance.RED;
         MainV2.redSide = redSide;
         MainV1E.redSideS = redSide;
-        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, redSide ? turretOffsetR : turretOffsetB, MainV1E.lastTurretPos);
+        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.FAR.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, redSide ? turretOffsetR : turretOffsetB, MainV1E.lastTurretPos);
         turretSS.setRedSide(redSide);
         shooterSS.setRedSide(redSide);
         turretSS.setWrapAngles(-180, 180);
@@ -673,9 +673,9 @@ public class auto extends OpMode {
     public void loop() {
         Pose bluePos = new Pose(9, 138, 135); // BYE
         Pose redPos = new Pose(138, 138, 45);
-        turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
+        turretPID.setPID(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
-        turretSS.updatePID(turretPID, PIDTuneTurret.F);
+        turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
         turretSS.setTurretOffset(alliance == MainV1E.Alliance.RED ? turretOffsetR : turretOffsetB);
         shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(shooterOffset);

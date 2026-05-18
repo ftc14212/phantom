@@ -52,7 +52,6 @@ public class sotmTest extends OpMode {
                 .onComplete(this::onPromptsComplete);
         telemetryM = new TelemetryM(telemetry, debugMode);
         follower = Constants.createFollower(hardwareMap);
-        PIDController turretPID = new PIDController(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         PIDFCoefficients shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1")); // 1x axon max
         CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2")); // 1x axon max
@@ -65,7 +64,7 @@ public class sotmTest extends OpMode {
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         DcMotorEx encoder = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
         shooterR.setDirection(DcMotorEx.Direction.REVERSE);
-        turretSS = new TurretSS(turret, encoder, turretPID, MainV1E.lastTurretPos);
+        turretSS = new TurretSS(turret, encoder, PIDTuneTurret.FAR, PIDTuneTurret.CLOSE, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
         shooterSS.setPoses(MainV3.getShooterLUT(), 15.1, 124.9, MainV3.getHoodLut(), 15.1, 124.9);
         turretSS.setWrapAngles(-170, 170);

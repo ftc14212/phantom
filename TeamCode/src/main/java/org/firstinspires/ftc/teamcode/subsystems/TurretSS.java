@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.subsystems.enums.TurretS;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.SOTM;
+import org.firstinspires.ftc.teamcode.vars.Tune;
 
 public class TurretSS extends SubsystemBase {
     // hardware
@@ -33,20 +34,23 @@ public class TurretSS extends SubsystemBase {
     private boolean redSide = false;
     // config
     private int tolerance = 10;
-    private PIDController pid;
-    private double kF = PIDTuneTurret.F;
+    private PIDController FAR;
+    private PIDController CLOSE;
+    private double kF;
     private double offset = 0;
     private final double TPR = PIDTuneTurret.TPR;
     private final double ratio = PIDTuneTurret.ratio;
     private int minWrap = -210;
     private int maxWrap = 190;
     // init
-    public TurretSS(CombinedCRServo servos, DcMotorEx encoder, PIDController pid, double lastTurretPos) {
+    public TurretSS(CombinedCRServo servos, DcMotorEx encoder, Tune.PIDF pidFar, Tune.PIDF pidClose, double lastTurretPos) {
         // variables
         this.servos = servos;
         this.encoder = encoder;
         this.status = TurretS.ZERO;
-        this.pid = pid;
+        this.FAR = new PIDController(Math.sqrt(pidFar.P), pidFar.I, pidFar.D);
+        this.CLOSE = new PIDController(Math.sqrt(pidClose.P), pidClose.I, pidClose.D);
+        this.kF = pidFar.F;
         // init
         if (lastTurretPos != -999) currentAngle = lastTurretPos;
         else encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -67,12 +71,13 @@ public class TurretSS extends SubsystemBase {
         currentAngle = (-encoder.getCurrentPosition() / (TPR * ratio)) * 360;
         // turret code
         double error = wrap(target - currentAngle);
+        double pidF = FAR.calculate(target, currentAngle);
+        double pidC = CLOSE.calculate(target, currentAngle);
         double ff = 0;
-        if (Math.abs(error) > tolerance) ff = Math.signum(error) * kF;
-        double power = pid.calculate(error) + ff;
+        if (Math.abs(error) > 10) ff = Math.signum(error) * kF;
+        double power = Math.abs(error) <= tolerance ? pidC + ff : pidF + ff;
         power = Math.max(-1, Math.min(1, power));
-        if (Math.abs(power) > 0.03) servos.setPower(power);
-        else servos.setPower(0);
+        servos.setPower(power);
     }
     private double alignAngle() {
         double dx = targetPos.getX() - follower.getPose().getX();
@@ -117,8 +122,10 @@ public class TurretSS extends SubsystemBase {
         minWrap = min;
         maxWrap = max;
     }
-    public void updatePID(PIDController pid) {
-        this.pid = pid;
+    public void updatePID(Tune.PIDF pidFar, Tune.PIDF pidClose) {
+        this.FAR = new PIDController(Math.sqrt(pidFar.P), pidFar.I, pidFar.D);
+        this.CLOSE = new PIDController(Math.sqrt(pidClose.P), pidClose.I, pidClose.D);
+        this.kF = pidFar.F;
     }
     public void setRedSide(boolean redSide) {
         this.redSide = redSide;
@@ -137,8 +144,11 @@ public class TurretSS extends SubsystemBase {
     public double getTarget() {
         return target;
     }
-    public PIDController getPid() {
-        return pid;
+    public PIDController getPidFar() {
+        return FAR;
+    }
+    public PIDController getPidClose() {
+        return CLOSE;
     }
     public Pose getTargetPose() {
         return targetPos;
@@ -155,10 +165,16 @@ public class TurretSS extends SubsystemBase {
                 "-- Positions --\n" +
                 "Turret current pos: " + getCurrentPos() + "\n" +
                 "Turret target pos: " + getTarget() + "\n" +
-                "-- PID Values --\n" +
-                "P: " + pid.getP() + "\n" +
-                "I: " + pid.getI() + "\n" +
-                "D: " + pid.getD() + "\n" +
+                "-- PID Far Values --\n" +
+                "P: " + FAR.getP() + "\n" +
+                "I: " + FAR.getI() + "\n" +
+                "D: " + FAR.getD() + "\n" +
+                "F: " + kF + "\n" +
+                "-- PID Close Values --\n" +
+                "P: " + FAR.getP() + "\n" +
+                "I: " + FAR.getI() + "\n" +
+                "D: " + FAR.getD() + "\n" +
+                "F: " + kF + "\n" +
                 "-- Values --\n" +
                 "Turret redSide: " + redSide + "\n" +
                 "Offset: " + offset + "\n" +

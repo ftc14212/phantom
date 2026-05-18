@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.utils;
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
+import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
+
 /**
  * SOTM
  * turret + shooter prediction
@@ -61,13 +63,13 @@ public class SOTM {
     /**
      * Compute shooter distance compensation
      */
-    public double computeCompensatedDistance(Pose robotPose, Pose targetPos, InterpLUT shooterLUT) {
+    public double computeCompensatedDistance(Pose robotPose, Pose targetPos) {
         double rx = robotPose.getX();
         double ry = robotPose.getY();
         double dx = targetPos.getX() - rx;
         double dy = targetPos.getY() - ry;
         double dist = Math.hypot(dx, dy);
-        double shooterVel = shooterLUT.get(dist);
+        double shooterVel = ShooterSS.getShooterVeloLut(dist);
         double t = dist / shooterVel;
         t += latency;
         double[] pred = predictPose(rx, ry, t);

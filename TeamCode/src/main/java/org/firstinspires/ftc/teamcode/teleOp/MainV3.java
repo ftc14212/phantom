@@ -53,7 +53,8 @@ public class MainV3 extends OpMode {
      * @author David Grieas, Iza Sikorski - 14212 MetroBotics
     **/
     // positions
-    public static double pivotCpos = 0.38;
+    public static double pivotCpos = 0;
+    public static double stopperCpos = 1;
     public static double stripsCpos = 0.611;
     public static double turretTpos = 0;
     public static double endGameStrips = 0.89;
@@ -107,7 +108,6 @@ public class MainV3 extends OpMode {
     MainV1E.StartPos startPos;
     Timer gameTimer = new Timer();
     // pids
-    PIDController turretPID;
     PIDFCoefficients shooterPID;
     // subsystems
     TurretSS turretSS;
@@ -118,7 +118,6 @@ public class MainV3 extends OpMode {
                 .prompt("start_pos", new OptionPrompt<>("Starting Position", MainV1E.StartPos.FAR, MainV1E.StartPos.CLOSE))
                 .onComplete(this::onPromptsComplete);
         // hardware
-        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
@@ -157,8 +156,9 @@ public class MainV3 extends OpMode {
         // Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
         // limelight3A.setPollRateHz(50);
         // limits
-        hood.scaleRange(0, 0.38);
-        pivot.scaleRange(0, 0.4);
+        hood.scaleRange(0, 0.37);
+        pivot.scaleRange(0, 0.375);
+        stopper.scaleRange(0, 0.29);
         // reverse
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
         leftRear.setDirection(DcMotorEx.Direction.REVERSE);
@@ -178,15 +178,17 @@ public class MainV3 extends OpMode {
         if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
         MainV1E.lastAutoPos = null;
         hood.setPosition(0);
-        pivot.setPosition(pivotCpos = 0.38);
+        pivot.setPosition(pivotCpos = 0);
         led.setPosition(0.611);
+        stopper.setPosition(stopperCpos = 1);
         strips.setPosition(stripsCpos = initGameStrips);
         pinpoint.recalibrateIMU();
         // subsystems
-        turretSS = new TurretSS(turret, indexer, turretPID, MainV1E.lastTurretPos);
+        turretSS = new TurretSS(turret, indexer, PIDTuneTurret.FAR, PIDTuneTurret.CLOSE, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
         turretSS.setWrapAngles(-170, 170);
+        turretSS.setTarget(0);
         turretSS.update(follower);
         shooterSS.update(follower);
         // misc
@@ -242,9 +244,7 @@ public class MainV3 extends OpMode {
         Pose redPos = new Pose(138, 138);
         // debugs
         telemetryM.setDebug(debugMode);
-        turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P, PIDTuneShooterSdk.I, PIDTuneShooterSdk.D, PIDTuneShooterSdk.F);
-        turretSS.updatePID(turretPID);
         turretSS.setOffset(redSide ? turretOffsetR : turretOffsetB);
         shooterSS.updatePID(shooterPID);
         shooterSS.setOffset(shooterOffset);
@@ -295,7 +295,8 @@ public class MainV3 extends OpMode {
         }
         // controls
         if (INTAKE) {
-            pivotCpos = 0.55;
+            pivotCpos = 0.06;
+            stopperCpos = 1;
             if (indexerOn) indexer.setPower(0.9);
             intake.setPower(1);
             if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexer.setPower(0);;
@@ -305,13 +306,15 @@ public class MainV3 extends OpMode {
         }
         if (OUTTAKE) {
             indexerOn = true;
-            pivotCpos = 0.55;
+            pivotCpos = 0.06;
+            stopperCpos = 1;
             indexer.setPower(-1);
             intake.setPower(-1);
         }
         if (FEED) {
             indexerOn = true;
-            pivotCpos = 0.38;
+            pivotCpos = 0;
+            stopperCpos = 0;
             indexer.setPower(0.9);
             intake.setPower(1);
         }
@@ -329,7 +332,7 @@ public class MainV3 extends OpMode {
             turretSS.reset();
         }
         if (RESET_INTAKE) {
-            pivotCpos = 0.38;
+            pivotCpos = 0;
             indexer.setPower(0);
             intake.setPower(0);
             shooterSS.reset();

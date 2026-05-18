@@ -92,7 +92,7 @@ public class ShooterSS extends SubsystemBase {
             sotm.updateVelocity(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
             distShooter = Math.sqrt(Math.pow((targetPos.getX() - follower.getPose().getX()), 2) + Math.pow((targetPos.getY() - follower.getPose().getY()), 2));
             distShooter += offset;
-            distSOTM = sotm.computeCompensatedDistance(follower.getPose(), targetPos, shooterLUT) + offset;
+            distSOTM = sotm.computeCompensatedDistance(follower.getPose(), targetPos) + offset;
             // shooter code
             hood.setPosition(hoodCpos);
             motors.setVelocity(target);

@@ -111,7 +111,7 @@ public class MainV1 extends OpMode {
                 .prompt("start_pos", new OptionPrompt<>("Starting Position", MainV1E.StartPos.FAR, MainV1E.StartPos.CLOSE))
                 .onComplete(this::onPromptsComplete);
         // hardware
-        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
+        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
         telemetryM = new TelemetryM(telemetry, debugMode);
@@ -221,7 +221,7 @@ public class MainV1 extends OpMode {
         Pose target = redSide ? redPos : bluePos;
         // variables
         telemetryM.setDebug(debugMode);
-        turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
+        turretPID.setPID(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
         shooterL.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
         shooterR.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
         turretCpos = (-indexer.getCurrentPosition() / (PIDTuneTurret.TPR * PIDTuneTurret.ratio)) * 360;
@@ -332,7 +332,7 @@ public class MainV1 extends OpMode {
         shooterL.setVelocity(shooterVelo); // follower
         // turret code
         double error = turretTpos - turretCpos;
-        double power = -turretPID.calculate(0, error) + PIDTuneTurret.F;
+        double power = -turretPID.calculate(0, error) + PIDTuneTurret.FAR.F;
         power = Math.max(-1, Math.min(1, power));
         turret.setPower(power);
         follower.update();
@@ -351,7 +351,7 @@ public class MainV1 extends OpMode {
         telemetryM.addData(true, "tReset", tReset);
         telemetryM.addData(true, "tReset2", tReset2);
         telemetryM.addData(true, "turret error", Math.abs(turretTpos - turretCpos));
-        telemetryM.addData(true, "PIDF", "P: " + PIDTuneTurret.P + " I: " + PIDTuneTurret.I + " D: " + PIDTuneTurret.D + " F: " + PIDTuneTurret.F);
+        telemetryM.addData(true, "PIDF", "P: " + PIDTuneTurret.FAR.P + " I: " + PIDTuneTurret.FAR.I + " D: " + PIDTuneTurret.FAR.D + " F: " + PIDTuneTurret.FAR.F);
         telemetryM.addData(true, "turretTpos", turretTpos);
         telemetryM.addData(true, "shooterR Current", shooterR.getCurrent(CurrentUnit.MILLIAMPS));
         telemetryM.addData(true, "indexerOn", indexerOn);

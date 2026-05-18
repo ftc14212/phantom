@@ -418,7 +418,7 @@ public class auton extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         // hi
         shooterPID = new PIDController(Math.sqrt(PIDTuneShooter.P), PIDTuneShooter.I, PIDTuneShooter.D);
-        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.P + turretPOffset), PIDTuneTurret.I, PIDTuneTurret.D);
+        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P + turretPOffset), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
         beams = hardwareMap.get(DigitalChannel.class, "bb");
         // gamepads
         currentGamepad1 = new Gamepad();
@@ -1037,7 +1037,7 @@ public class auton extends OpMode {
             hoodCpos = getHoodCpos(distShooter);
         }
         double error = turretTpos - turretCpos;
-        double power = -turretPID.calculate(0, error) + PIDTuneTurret.F;
+        double power = -turretPID.calculate(0, error) + PIDTuneTurret.FAR.F;
         power = Math.max(-1, Math.min(1, power));
         turret.setPower(power);
         follower.update();
@@ -1061,7 +1061,7 @@ public class auton extends OpMode {
         telemetryM.addData(true, "tReset", tReset);
         telemetryM.addData(true, "tReset2", tReset2);
         telemetryM.addData(true,"turret error", Math.abs(turretTpos - turretCpos));
-        telemetryM.addData(true, "PIDF", "P: " + PIDTuneTurret.P + " I: " + PIDTuneTurret.I + " D: " + PIDTuneTurret.D + " F: " + PIDTuneTurret.F);
+        telemetryM.addData(true, "PIDF", "P: " + PIDTuneTurret.FAR.P + " I: " + PIDTuneTurret.FAR.I + " D: " + PIDTuneTurret.FAR.D + " F: " + PIDTuneTurret.FAR.F);
         telemetryM.addData(true, "turretTpos", turretTpos);
         telemetryM.addData(true, "shooterR Current", shooterR.getCurrent(CurrentUnit.MILLIAMPS));
         telemetryM.addData(true, "indexerOn", indexerOn);

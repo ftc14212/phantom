@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
-import org.firstinspires.ftc.teamcode.utils.TelemetryM;
+import org.firstinspires.ftc.teamcode.vars.Tune;
 
 import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
@@ -22,11 +22,19 @@ public class PIDTuneTurret extends OpMode {
     private CombinedCRServo turret;
     private CachingDcMotorEx turretEM;
     // private AnalogInput elc;
-    private PIDController controller;
-    public static double P = 0.00035;
-    public static double I = 0;
-    public static double D = 0.0006;
-    public static double F = 0;
+    private PIDController farController;
+    private PIDController closeController;
+    public static Tune.PIDF FAR = new Tune.PIDF(
+            0.000023,
+            0,
+            0.85,
+            0.08);
+    public static Tune.PIDF CLOSE = new Tune.PIDF(
+            0.0003,
+            0,
+            0.4,
+            0.08);
+    public static double tolerance = 30;
     public static double TARGET = 0;
     public static int TPR = 4000; // ticks per revolution
     public static double ratio = (double) 120 / 32;
@@ -37,7 +45,8 @@ public class PIDTuneTurret extends OpMode {
     public void init() {
         // set the PID values
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
-        controller = new PIDController(Math.sqrt(P), I, D);
+        farController = new PIDController(Math.sqrt(FAR.P), FAR.I, FAR.D);
+        closeController = new PIDController(Math.sqrt(CLOSE.P), CLOSE.I, CLOSE.D);
         // hardware
         CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1"));
         CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2"));
@@ -59,18 +68,23 @@ public class PIDTuneTurret extends OpMode {
     @Override
     public void loop() {
         // Update PID values
-        controller.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
+        farController = new PIDController(Math.sqrt(FAR.P), FAR.I, FAR.D);
+        closeController = new PIDController(Math.sqrt(CLOSE.P), CLOSE.I, CLOSE.D);
         // Get current positions
         double turretOR = (TPR * ratio);
         double turretCpos = (turretEM.getCurrentPosition() / turretOR) * 360;
+        double error = TARGET - turretCpos;
         // Calculate PID
-        double pid = controller.calculate(turretCpos, TARGET);
-        double ff = F;
-        double rawPower = pid + ff;
+        double pidF = farController.calculate(turretCpos, TARGET);
+        double pidC = closeController.calculate(turretCpos, TARGET);
+        double ff = 0;
+        if (Math.abs(error) > 10) ff = Math.signum(error) * FAR.F;
+        double rawPower = Math.abs(error) <= tolerance ? pidC : pidF + ff;
         // Apply power
         turret.setPower(-Math.max(-1, Math.min(1, rawPower))); // leader
         // telemetry for debugging
-        telemetry.addData("PIDF", "P: " + P + " I: " + I + " D: " + D + " F: " + F);
+        telemetry.addData("PIDF Close", "P: " + CLOSE.P + " I: " + CLOSE.I + " D: " + CLOSE.D + " F: " + CLOSE.F);
+        telemetry.addData("PIDF Far", "P: " + FAR.P + " I: " + FAR.I + " D: " + FAR.D + " F: " + FAR.F);
         telemetry.addData("target", TARGET);
         telemetry.addData("turretCpos", turretCpos);
         telemetry.addData("turretPowerRAW", rawPower);

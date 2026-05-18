@@ -149,9 +149,9 @@ public class autoStationaryRED extends OpMode {
     public void loop() {
         Pose bluePos = new Pose(9, 138, 135); // BYE
         Pose redPos = new Pose(138, 138, 45);
-        turretPID.setPID(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
+        turretPID.setPID(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
         shooterPID = new PIDFCoefficients(55,0,0,12);
-        turretSS.updatePID(turretPID, PIDTuneTurret.F);
+        turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
         turretSS.setTurretOffset(-8);
         shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(-16);
@@ -215,7 +215,7 @@ public class autoStationaryRED extends OpMode {
         shooterSS = new ShooterSS_OLD(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(MainV2.getShooterLUT(), 15.1, 124.9, MainV2.getHoodLut(), 15.1, 124.9);
         shooterSS.update(follower);
-        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, 0, MainV1E.lastTurretPos);
+        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.FAR.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, 0, MainV1E.lastTurretPos);
         turretSS.setRedSide(true);
         shooterSS.setRedSide(true);
         turretSS.setWrapAngles(-180, 180);

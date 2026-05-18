@@ -37,13 +37,14 @@ public class measureShooter extends LinearOpMode {
     @Override
     public void runOpMode() {
         // hardware
-        PIDController turretPID = new PIDController(Math.sqrt(PIDTuneTurret.P), PIDTuneTurret.I, PIDTuneTurret.D);
+        PIDController turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
         TelemetryM telemetryM = new TelemetryM(telemetry, debugMode);
         Follower follower = Constants.createFollower(hardwareMap);
         // motors
         CachingDcMotorEx shooterL = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterL")); // 6000 rpm
         CachingDcMotorEx shooterR = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterR")); // 6000 rpm
         CachingDcMotorEx indexer = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1620 rpm
+        CachingDcMotorEx intake = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "intake")); // 1150 rpm --> 460 rpm
         // servos
         CachingServo hoodR = new CachingServo(hardwareMap.get(Servo.class, "hoodR")); // 1x axon mini
         CachingServo hoodL = new CachingServo(hardwareMap.get(Servo.class, "hoodL")); // 1x axon mini
@@ -51,8 +52,12 @@ public class measureShooter extends LinearOpMode {
         CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1")); // 1x axon mini
         CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2")); // 1x axon mini
         CombinedCRServo turret = new CombinedCRServo(turret1, turret2); // 2x axon minis
+        CachingServo stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
+        CachingServo pivot = new CachingServo(hardwareMap.get(Servo.class, "pivot")); // 1x axon max
         // limits
-        hood.scaleRange(0, 0.38);
+        stopper.scaleRange(0, 0.29);
+        pivot.scaleRange(0, 0.375);
+        hood.scaleRange(0, 0.37);
         // reverse
         indexer.setDirection(DcMotorEx.Direction.REVERSE);
         shooterR.setDirection(DcMotorEx.Direction.REVERSE);
@@ -60,7 +65,7 @@ public class measureShooter extends LinearOpMode {
         gamepad1.setLedColor(0, 255, 255, -1);
         gamepad2.setLedColor(0, 255, 0, -1);
         hardwareMap.get(IMU.class, "imu").resetYaw();
-        TurretSS_OLD turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, MainV2.turretOffsetB, MainV1E.lastTurretPos);
+        // TurretSS_OLD turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.FAR.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, MainV2.turretOffsetB, MainV1E.lastTurretPos);
         // telemetry
         telemetryM.addLine("Metrobotics Team 14212!");
         telemetryM.addLine(true, "INIT DONE!");
@@ -68,14 +73,20 @@ public class measureShooter extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                turretSS.updatePID(turretPID, PIDTuneTurret.F);
+                if(gamepad1.left_bumper) stopper.setPosition(0);
+                else stopper.setPosition(1);
+                /*
+                turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
                 turretSS.setTurretOffset(MainV2.turretOffsetB);
                 turretSS.updateTurretTpos(turretTpos);
                 turretSS.update(follower);
+                 */
                 shooterL.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
                 shooterR.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
                 indexer.setPower(turnOn ? indexerSpeed : 0);
+                intake.setPower(turnOn ? indexerSpeed : 0);
                 hood.setPosition(hoodCpos);
+                pivot.setPosition(0.06);
                 shooterR.setVelocity(turnOn ? shooterVelo : 0); // leader
                 shooterL.setVelocity(turnOn ? shooterVelo : 0); // follower
                 telemetryM.update();

@@ -52,6 +52,7 @@ public class turretAligning extends OpMode {
         CombinedCRServo turret = new CombinedCRServo(turret1, turret2); // 2x axon maxs
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         DcMotorEx encoder = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
+        encoder.setDirection(DcMotorEx.Direction.REVERSE);
         led.setPosition(1);
         turretSS = new TurretSS(turret, encoder, PIDTuneTurret.FAR, PIDTuneTurret.CLOSE, MainV1E.lastTurretPos);
         turretSS.setWrapAngles(-170, 170);
@@ -93,14 +94,12 @@ public class turretAligning extends OpMode {
 
     @Override
     public void loop() {
-        Gamepad gamepad1p = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
-        CombinedGamepad gamepad1 = new CombinedGamepad(this.gamepad1, gamepad1p);
         // poses
-        follower.setTeleOpDrive(-gamepad1.leftStickY(), -gamepad1.leftStickX(), -gamepad1.rightStickX(), true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         turretSS.setOffset(turretOffset);
         turretSS.setPoses(bluePos.getPose(), redPos.getPose());
         turretSS.update(follower);
-        if (gamepad1.leftBumper() || gamepad1p.left_bumper) {
+        if (gamepad1.left_bumper) {
             turretSS.align();
             led.setPosition(0.388);
         } else {

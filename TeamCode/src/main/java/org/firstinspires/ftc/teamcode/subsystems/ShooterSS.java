@@ -107,6 +107,8 @@ public class ShooterSS extends SubsystemBase {
         if (lastStatus != null) if (status == lastStatus) return;
         switch (status) {
             case STOPPED:
+            case FLOATING:
+            case BRAKING:
                 leds.setPosition(LED_REG);
                 break;
             case AT_TARGET:

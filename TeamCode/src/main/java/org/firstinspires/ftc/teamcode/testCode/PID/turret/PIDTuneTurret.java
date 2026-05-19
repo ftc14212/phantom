@@ -25,9 +25,9 @@ public class PIDTuneTurret extends OpMode {
     private PIDController farController;
     private PIDController closeController;
     public static Tune.PIDF FAR = new Tune.PIDF(
-            0.000023,
+            0.000025,
             0,
-            0.85,
+            0.01,
             0.08);
     public static Tune.PIDF CLOSE = new Tune.PIDF(
             0.0003,

@@ -158,7 +158,7 @@ public class MainV3 extends OpMode {
         // limits
         hood.scaleRange(0, 0.37);
         pivot.scaleRange(0, 0.375);
-        stopper.scaleRange(0, 0.29);
+        stopper.scaleRange(0.42, 1);
         // reverse
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
         leftRear.setDirection(DcMotorEx.Direction.REVERSE);
@@ -180,7 +180,7 @@ public class MainV3 extends OpMode {
         hood.setPosition(0);
         pivot.setPosition(pivotCpos = 0);
         led.setPosition(0.611);
-        stopper.setPosition(stopperCpos = 1);
+        stopper.setPosition(stopperCpos = 0.55);
         strips.setPosition(stripsCpos = initGameStrips);
         pinpoint.recalibrateIMU();
         // subsystems
@@ -296,7 +296,7 @@ public class MainV3 extends OpMode {
         // controls
         if (INTAKE) {
             pivotCpos = 0.06;
-            stopperCpos = 1;
+            stopperCpos = 0.55;
             if (indexerOn) indexer.setPower(0.9);
             intake.setPower(1);
             if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexer.setPower(0);;
@@ -307,7 +307,7 @@ public class MainV3 extends OpMode {
         if (OUTTAKE) {
             indexerOn = true;
             pivotCpos = 0.06;
-            stopperCpos = 1;
+            stopperCpos = 0.55;
             indexer.setPower(-1);
             intake.setPower(-1);
         }

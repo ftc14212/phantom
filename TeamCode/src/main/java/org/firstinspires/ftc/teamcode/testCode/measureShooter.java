@@ -55,7 +55,7 @@ public class measureShooter extends LinearOpMode {
         CachingServo stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
         CachingServo pivot = new CachingServo(hardwareMap.get(Servo.class, "pivot")); // 1x axon max
         // limits
-        stopper.scaleRange(0, 0.29);
+        stopper.scaleRange(0.42, 1);
         pivot.scaleRange(0, 0.375);
         hood.scaleRange(0, 0.37);
         // reverse
@@ -74,7 +74,7 @@ public class measureShooter extends LinearOpMode {
         if (opModeIsActive()) {
             while (opModeIsActive()) {
                 if(gamepad1.left_bumper) stopper.setPosition(0);
-                else stopper.setPosition(1);
+                else stopper.setPosition(0.55);
                 /*
                 turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
                 turretSS.setTurretOffset(MainV2.turretOffsetB);

@@ -180,7 +180,7 @@ public class MainV3 extends OpMode {
         hood.setPosition(0);
         pivot.setPosition(pivotCpos = 0);
         led.setPosition(0.611);
-        stopper.setPosition(stopperCpos = 0.55);
+        stopper.setPosition(stopperCpos = 0.5);
         strips.setPosition(stripsCpos = initGameStrips);
         pinpoint.recalibrateIMU();
         // subsystems
@@ -296,7 +296,7 @@ public class MainV3 extends OpMode {
         // controls
         if (INTAKE) {
             pivotCpos = 0.06;
-            stopperCpos = 0.55;
+            stopperCpos = 0.5;
             if (indexerOn) indexer.setPower(0.9);
             intake.setPower(1);
             if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexer.setPower(0);;
@@ -307,7 +307,7 @@ public class MainV3 extends OpMode {
         if (OUTTAKE) {
             indexerOn = true;
             pivotCpos = 0.06;
-            stopperCpos = 0.55;
+            stopperCpos = 0.5;
             indexer.setPower(-1);
             intake.setPower(-1);
         }

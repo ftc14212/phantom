@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.old.ShooterSS_OLD;
 import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.teleOp.MainV2;
-import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 import org.firstinspires.ftc.teamcode.vars.MainV1E;
@@ -149,9 +149,9 @@ public class autoStationaryRED extends OpMode {
     public void loop() {
         Pose bluePos = new Pose(9, 138, 135); // BYE
         Pose redPos = new Pose(138, 138, 45);
-        turretPID.setPID(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        turretPID.setPID(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         shooterPID = new PIDFCoefficients(55,0,0,12);
-        turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
+        turretSS.updatePID(turretPID, PIDDualTuneTurret.FAR.F);
         turretSS.setTurretOffset(-8);
         shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(-16);
@@ -215,7 +215,7 @@ public class autoStationaryRED extends OpMode {
         shooterSS = new ShooterSS_OLD(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(MainV2.getShooterLUT(), 15.1, 124.9, MainV2.getHoodLut(), 15.1, 124.9);
         shooterSS.update(follower);
-        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.FAR.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, 0, MainV1E.lastTurretPos);
+        turretSS = new TurretSS_OLD(turretPID, PIDDualTuneTurret.FAR.F, turret, indexer, PIDDualTuneTurret.TPR, PIDDualTuneTurret.ratio, 0, MainV1E.lastTurretPos);
         turretSS.setRedSide(true);
         shooterSS.setRedSide(true);
         turretSS.setWrapAngles(-180, 180);

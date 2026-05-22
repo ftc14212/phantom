@@ -13,9 +13,10 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
 import org.firstinspires.ftc.teamcode.subsystems.enums.TurretS;
-import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.SOTM;
+import org.firstinspires.ftc.teamcode.utils.TrapezoidalMotionProfile;
 import org.firstinspires.ftc.teamcode.vars.Tune;
 
 public class TurretSS extends SubsystemBase {
@@ -23,6 +24,7 @@ public class TurretSS extends SubsystemBase {
     private final CombinedCRServo servos;
     private final DcMotorEx encoder;
     private final SOTM sotm = new SOTM();
+    private final TrapezoidalMotionProfile profile;
     // data
     private double currentAngle = 0;
     private TurretS status;
@@ -34,23 +36,25 @@ public class TurretSS extends SubsystemBase {
     private boolean redSide = false;
     // config
     private int tolerance = 10;
-    private PIDController FAR;
-    private PIDController CLOSE;
+    private final PIDController controller;
     private double kF;
     private double offset = 0;
-    private final double TPR = PIDTuneTurret.TPR;
-    private final double ratio = PIDTuneTurret.ratio;
+    private final double TPR = PIDDualTuneTurret.TPR;
+    private final double ratio = PIDDualTuneTurret.ratio;
     private int minWrap = -210;
     private int maxWrap = 190;
+    public static double maxVel = 180;
+    public static double maxAccel = 360;
     // init
-    public TurretSS(CombinedCRServo servos, DcMotorEx encoder, Tune.PIDF pidFar, Tune.PIDF pidClose, double lastTurretPos) {
+    public TurretSS(CombinedCRServo servos, DcMotorEx encoder, Tune.PIDF pidf, double lastTurretPos) {
         // variables
         this.servos = servos;
         this.encoder = encoder;
         this.status = TurretS.ZERO;
-        this.FAR = new PIDController(Math.sqrt(pidFar.P), pidFar.I, pidFar.D);
-        this.CLOSE = new PIDController(Math.sqrt(pidClose.P), pidClose.I, pidClose.D);
-        this.kF = pidFar.F;
+        this.controller = new PIDController(pidf.P, pidf.I, pidf.D);
+        this.kF = pidf.F;
+        this.profile = new TrapezoidalMotionProfile(maxVel, maxAccel);
+        profile.reset(0);
         // init
         if (lastTurretPos != -999) currentAngle = lastTurretPos;
         else encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -65,19 +69,21 @@ public class TurretSS extends SubsystemBase {
         // update
         this.follower = follower;
         sotm.updateVelocity(follower.getVelocity().getXComponent(), follower.getVelocity().getYComponent());
+        profile.setConstraints(maxVel, maxAccel);
         // pose
         targetPos = redSide ? redPos : bluePos;
         // grab current pos
-        currentAngle = (-encoder.getCurrentPosition() / (TPR * ratio)) * 360;
+        currentAngle = (encoder.getCurrentPosition() / (TPR * ratio)) * 360;
         // turret code
+        double profiledTarget = profile.update(target);
+        double pid = controller.calculate(currentAngle, profiledTarget);
         double error = wrap(target - currentAngle);
-        double pidF = FAR.calculate(target, currentAngle);
-        double pidC = CLOSE.calculate(target, currentAngle);
         double ff = 0;
-        if (Math.abs(error) > 10) ff = Math.signum(error) * kF;
-        double power = Math.abs(error) <= tolerance ? pidC + ff : pidF + ff;
-        power = Math.max(-1, Math.min(1, power));
-        servos.setPower(power);
+        if (Math.abs(error) > 2) ff = Math.signum(error) * kF;
+        double rawPower = pid + ff;
+        rawPower = Math.max(-1, Math.min(1, rawPower));
+        // apply power
+        servos.setPower(rawPower);
     }
     private double alignAngle() {
         double dx = targetPos.getX() - follower.getPose().getX();
@@ -122,10 +128,9 @@ public class TurretSS extends SubsystemBase {
         minWrap = min;
         maxWrap = max;
     }
-    public void updatePID(Tune.PIDF pidFar, Tune.PIDF pidClose) {
-        this.FAR = new PIDController(Math.sqrt(pidFar.P), pidFar.I, pidFar.D);
-        this.CLOSE = new PIDController(Math.sqrt(pidClose.P), pidClose.I, pidClose.D);
-        this.kF = pidFar.F;
+    public void updatePID(Tune.PIDF pidf) {
+        controller.setPID(pidf.P, pidf.I, pidf.D);
+        this.kF = pidf.F;
     }
     public void setRedSide(boolean redSide) {
         this.redSide = redSide;
@@ -144,11 +149,8 @@ public class TurretSS extends SubsystemBase {
     public double getTarget() {
         return target;
     }
-    public PIDController getPidFar() {
-        return FAR;
-    }
-    public PIDController getPidClose() {
-        return CLOSE;
+    public PIDController getPid() {
+        return controller;
     }
     public Pose getTargetPose() {
         return targetPos;
@@ -165,15 +167,10 @@ public class TurretSS extends SubsystemBase {
                 "-- Positions --\n" +
                 "Turret current pos: " + getCurrentPos() + "\n" +
                 "Turret target pos: " + getTarget() + "\n" +
-                "-- PID Far Values --\n" +
-                "P: " + FAR.getP() + "\n" +
-                "I: " + FAR.getI() + "\n" +
-                "D: " + FAR.getD() + "\n" +
-                "F: " + kF + "\n" +
-                "-- PID Close Values --\n" +
-                "P: " + FAR.getP() + "\n" +
-                "I: " + FAR.getI() + "\n" +
-                "D: " + FAR.getD() + "\n" +
+                "-- PID Values --\n" +
+                "P: " + controller.getP() + "\n" +
+                "I: " + controller.getI() + "\n" +
+                "D: " + controller.getD() + "\n" +
                 "F: " + kF + "\n" +
                 "-- Values --\n" +
                 "Turret redSide: " + redSide + "\n" +
@@ -184,6 +181,8 @@ public class TurretSS extends SubsystemBase {
                 "Align Turret output: " + wrap(alignAngle()) + "\n" +
                 "SOTM output: " + wrap(sotmAngle()) + "\n" +
                 "Turret raw Power" + servos.getPower() + "\n" +
+                "Profile velocity" + profile.getVelocity() + "\n" +
+                "Profile Targer" + profile.update(target) + "\n" +
                 "-- Poses --\n" +
                 "Follower:" + "\n" +
                 "X: " + follower.getPose().getX() + "\n" +

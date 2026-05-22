@@ -22,7 +22,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooter;
-import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.LynxUtils;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
@@ -189,7 +189,7 @@ public class auto12 extends OpMode {
         follower.setStartingPose(startPose);
         // hi
         shooterPID = new PIDController(Math.sqrt(PIDTuneShooter.P), PIDTuneShooter.I, PIDTuneShooter.D);
-        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P + turretPOffset), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        turretPID = new PIDController(Math.sqrt(PIDDualTuneTurret.FAR.P + turretPOffset), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         beams = hardwareMap.get(DigitalChannel.class, "bb");
         // gamepads
         currentGamepad1 = new Gamepad();
@@ -543,7 +543,7 @@ public class auto12 extends OpMode {
         Pose bluePos = new Pose(114.9, 24.7, Math.toRadians(blueShooter));
         Pose redPos = new Pose(124.9, -62, Math.toRadians(redShooter));
         target = redSide ? redPos : bluePos;
-        turretCpos = (-indexer.getCurrentPosition() / (PIDTuneTurret.TPR * PIDTuneTurret.ratio)) * 360;
+        turretCpos = (-indexer.getCurrentPosition() / (PIDDualTuneTurret.TPR * PIDDualTuneTurret.ratio)) * 360;
         double turretOffsetXY = Math.atan(target.getY()/follower.getPose().getX());
         double turretOffset = (Math.toDegrees(follower.getHeading()) - Math.toDegrees(target.getHeading())) + turretOffsetXY;
         distShooter = redSide ? Math.sqrt(Math.pow((redPos.getX() - follower.getPose().getX()), 2) + Math.pow((redPos.getY() - follower.getPose().getY()), 2)) : Math.sqrt(Math.pow((bluePos.getX() - follower.getPose().getX()), 2) + Math.pow((bluePos.getY() - follower.getPose().getY()), 2));
@@ -564,7 +564,7 @@ public class auto12 extends OpMode {
         shooterL.setVelocity(sPower); // follower
         // turret code
         double error = turretTpos - turretCpos;
-        double power = -turretPID.calculate(0, error) + PIDTuneTurret.FAR.F;
+        double power = -turretPID.calculate(0, error) + PIDDualTuneTurret.FAR.F;
         power = Math.max(-1, Math.min(1, power));
         turret.setPower(power);
         follower.update();
@@ -582,7 +582,7 @@ public class auto12 extends OpMode {
         telemetryM.addData(true, "tReset", tReset);
         telemetryM.addData(true, "tReset2", tReset2);
         telemetryM.addData(true,"turret error", Math.abs(turretTpos - turretCpos));
-        telemetryM.addData(true, "PIDF", "P: " + PIDTuneTurret.FAR.P + " I: " + PIDTuneTurret.FAR.I + " D: " + PIDTuneTurret.FAR.D + " F: " + PIDTuneTurret.FAR.F);
+        telemetryM.addData(true, "PIDF", "P: " + PIDDualTuneTurret.FAR.P + " I: " + PIDDualTuneTurret.FAR.I + " D: " + PIDDualTuneTurret.FAR.D + " F: " + PIDDualTuneTurret.FAR.F);
         telemetryM.addData(true, "turretTpos", turretTpos);
         telemetryM.addData(true, "shooterR Current", shooterR.getCurrent(CurrentUnit.MILLIAMPS));
         telemetryM.addData(true, "indexerOn", indexerOn);

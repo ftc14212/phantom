@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.testCode.PID.turret;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
+import com.seattlesolvers.solverslib.controller.PIDController;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.seattlesolvers.solverslib.controller.SquIDFController;
 
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
@@ -17,17 +17,23 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 
 @Configurable
-@Autonomous(name="Squid Tune Turret", group="test_ftc14212")
-public class SquidTuneTurret extends OpMode {
+@Autonomous(name="PID Dual Tune Turret", group="test_ftc14212")
+public class PIDDualTuneTurret extends OpMode {
     private CombinedCRServo turret;
     private CachingDcMotorEx turretEM;
     // private AnalogInput elc;
-    private SquIDFController controller;
-    public static Tune.PIDF pidf = new Tune.PIDF(
-            0.01,
+    private PIDController farController;
+    private PIDController closeController;
+    public static Tune.PIDF FAR = new Tune.PIDF(
+            0.000025,
             0,
-            0.000001,
-            0);
+            0.01,
+            0.08);
+    public static Tune.PIDF CLOSE = new Tune.PIDF(
+            0.0003,
+            0,
+            0.4,
+            0.08);
     public static double tolerance = 30;
     public static double TARGET = 0;
     public static int TPR = 4000; // ticks per revolution
@@ -39,14 +45,14 @@ public class SquidTuneTurret extends OpMode {
     public void init() {
         // set the PID values
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
-        controller = new SquIDFController(pidf.P, pidf.I, pidf.D, pidf.F);
+        farController = new PIDController(Math.sqrt(FAR.P), FAR.I, FAR.D);
+        closeController = new PIDController(Math.sqrt(CLOSE.P), CLOSE.I, CLOSE.D);
         // hardware
         CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1"));
         CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2"));
         turret = new CombinedCRServo(turret1, turret2);
         turretEM = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer"));
         // reset encoders
-        turretEM.setDirection(DcMotorEx.Direction.REVERSE);
         turretEM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // turn on the motors without the built in controller
         turretEM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -61,24 +67,31 @@ public class SquidTuneTurret extends OpMode {
      **/
     @Override
     public void loop() {
-        telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
-        controller = new SquIDFController(pidf.P, pidf.I, pidf.D, pidf.F);
-        double currentPos = (turretEM.getCurrentPosition() / (TPR * ratio)) * 360.0;
-        double error = TARGET - currentPos;
-        double pid = controller.calculate(currentPos, TARGET);
-        if (Double.isNaN(pid)) pid = 0;
-        pid = Math.max(-1, Math.min(1, pid));
-        if (Math.abs(error) < tolerance) pid = 0;
-        turret.setPower(pid);
+        // Update PID values
+        farController = new PIDController(Math.sqrt(FAR.P), FAR.I, FAR.D);
+        closeController = new PIDController(Math.sqrt(CLOSE.P), CLOSE.I, CLOSE.D);
+        // Get current positions
+        double turretOR = (TPR * ratio);
+        double turretCpos = (turretEM.getCurrentPosition() / turretOR) * 360;
+        double error = TARGET - turretCpos;
+        // Calculate PID
+        double pidF = farController.calculate(turretCpos, TARGET);
+        double pidC = closeController.calculate(turretCpos, TARGET);
+        double ff = 0;
+        if (Math.abs(error) > 10) ff = Math.signum(error) * FAR.F;
+        double rawPower = Math.abs(error) <= tolerance ? pidC : pidF + ff;
+        // Apply power
+        turret.setPower(-Math.max(-1, Math.min(1, rawPower))); // leader
         // telemetry for debugging
-        telemetry.addData("PIDF", "P: " + pidf.P + " I: " + pidf.I + " D: " + pidf.D + " F: " + pidf.F);
+        telemetry.addData("PIDF Close", "P: " + CLOSE.P + " I: " + CLOSE.I + " D: " + CLOSE.D + " F: " + CLOSE.F);
+        telemetry.addData("PIDF Far", "P: " + FAR.P + " I: " + FAR.I + " D: " + FAR.D + " F: " + FAR.F);
         telemetry.addData("target", TARGET);
-        telemetry.addData("current pos", currentPos);
-        telemetry.addData("pid output", pid);
-        telemetry.addData("turretPower", turret.getPower());
-        telemetry.addData("error", Math.abs(error));
+        telemetry.addData("turretCpos", turretCpos);
+        telemetry.addData("turretPowerRAW", rawPower);
+        telemetry.addData("turretPower", Math.max(-1, Math.min(1, rawPower)));
+        telemetry.addData("error", Math.abs(TARGET - turretCpos));
         telemetry.addData("current ticks", turretEM.getCurrentPosition());
-        telemetry.addData("target ticks", (TARGET / 360.0) * TPR);
+        telemetry.addData("target ticks", TARGET*TPR);
         telemetry.update();
     }
 }

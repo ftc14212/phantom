@@ -36,7 +36,7 @@ import org.firstinspires.ftc.teamcode.subsystems.old.ShooterSS_OLD;
 import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.teleOp.MainV2;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
-import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 import org.firstinspires.ftc.teamcode.utils.LynxUtils;
@@ -574,7 +574,7 @@ public class auto extends OpMode {
         loopTime = new ElapsedTime();
         loopTime.reset();
         // hardware
-        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        turretPID = new PIDController(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
@@ -648,7 +648,7 @@ public class auto extends OpMode {
         redSide = alliance == MainV1E.Alliance.RED;
         MainV2.redSide = redSide;
         MainV1E.redSideS = redSide;
-        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.FAR.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, redSide ? turretOffsetR : turretOffsetB, MainV1E.lastTurretPos);
+        turretSS = new TurretSS_OLD(turretPID, PIDDualTuneTurret.FAR.F, turret, indexer, PIDDualTuneTurret.TPR, PIDDualTuneTurret.ratio, redSide ? turretOffsetR : turretOffsetB, MainV1E.lastTurretPos);
         turretSS.setRedSide(redSide);
         shooterSS.setRedSide(redSide);
         turretSS.setWrapAngles(-180, 180);
@@ -673,9 +673,9 @@ public class auto extends OpMode {
     public void loop() {
         Pose bluePos = new Pose(9, 138, 135); // BYE
         Pose redPos = new Pose(138, 138, 45);
-        turretPID.setPID(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        turretPID.setPID(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
-        turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
+        turretSS.updatePID(turretPID, PIDDualTuneTurret.FAR.F);
         turretSS.setTurretOffset(alliance == MainV1E.Alliance.RED ? turretOffsetR : turretOffsetB);
         shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(shooterOffset);

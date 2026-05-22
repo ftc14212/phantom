@@ -29,7 +29,7 @@ import com.skeletonarmy.marrow.prompts.Prompter;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
-import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.LynxUtils;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
@@ -111,7 +111,7 @@ public class MainV1 extends OpMode {
                 .prompt("start_pos", new OptionPrompt<>("Starting Position", MainV1E.StartPos.FAR, MainV1E.StartPos.CLOSE))
                 .onComplete(this::onPromptsComplete);
         // hardware
-        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        turretPID = new PIDController(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
         telemetryM = new TelemetryM(telemetry, debugMode);
@@ -221,10 +221,10 @@ public class MainV1 extends OpMode {
         Pose target = redSide ? redPos : bluePos;
         // variables
         telemetryM.setDebug(debugMode);
-        turretPID.setPID(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        turretPID.setPID(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         shooterL.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
         shooterR.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
-        turretCpos = (-indexer.getCurrentPosition() / (PIDTuneTurret.TPR * PIDTuneTurret.ratio)) * 360;
+        turretCpos = (-indexer.getCurrentPosition() / (PIDDualTuneTurret.TPR * PIDDualTuneTurret.ratio)) * 360;
         double distShooter = redSide ? Math.sqrt(Math.pow((redPos.getX() - follower.getPose().getX()), 2) + Math.pow((redPos.getY() - follower.getPose().getY()), 2)) : Math.sqrt(Math.pow((bluePos.getX() - follower.getPose().getX()), 2) + Math.pow((bluePos.getY() - follower.getPose().getY()), 2));
         distShooter += shooterOffset;
         // status
@@ -332,7 +332,7 @@ public class MainV1 extends OpMode {
         shooterL.setVelocity(shooterVelo); // follower
         // turret code
         double error = turretTpos - turretCpos;
-        double power = -turretPID.calculate(0, error) + PIDTuneTurret.FAR.F;
+        double power = -turretPID.calculate(0, error) + PIDDualTuneTurret.FAR.F;
         power = Math.max(-1, Math.min(1, power));
         turret.setPower(power);
         follower.update();
@@ -351,7 +351,7 @@ public class MainV1 extends OpMode {
         telemetryM.addData(true, "tReset", tReset);
         telemetryM.addData(true, "tReset2", tReset2);
         telemetryM.addData(true, "turret error", Math.abs(turretTpos - turretCpos));
-        telemetryM.addData(true, "PIDF", "P: " + PIDTuneTurret.FAR.P + " I: " + PIDTuneTurret.FAR.I + " D: " + PIDTuneTurret.FAR.D + " F: " + PIDTuneTurret.FAR.F);
+        telemetryM.addData(true, "PIDF", "P: " + PIDDualTuneTurret.FAR.P + " I: " + PIDDualTuneTurret.FAR.I + " D: " + PIDDualTuneTurret.FAR.D + " F: " + PIDDualTuneTurret.FAR.F);
         telemetryM.addData(true, "turretTpos", turretTpos);
         telemetryM.addData(true, "shooterR Current", shooterR.getCurrent(CurrentUnit.MILLIAMPS));
         telemetryM.addData(true, "indexerOn", indexerOn);

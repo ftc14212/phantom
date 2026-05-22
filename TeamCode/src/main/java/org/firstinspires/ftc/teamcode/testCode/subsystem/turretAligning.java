@@ -1,24 +1,21 @@
 package org.firstinspires.ftc.teamcode.testCode.subsystem;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.gamepad.PanelsGamepad;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.seattlesolvers.solverslib.controller.PIDController;
 import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
-import org.firstinspires.ftc.teamcode.utils.CombinedGamepad;
 import org.firstinspires.ftc.teamcode.utils.PPPoint;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 import org.firstinspires.ftc.teamcode.vars.MainV1E;
@@ -54,7 +51,7 @@ public class turretAligning extends OpMode {
         DcMotorEx encoder = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
         encoder.setDirection(DcMotorEx.Direction.REVERSE);
         led.setPosition(1);
-        turretSS = new TurretSS(turret, encoder, PIDTuneTurret.FAR, PIDTuneTurret.CLOSE, MainV1E.lastTurretPos);
+        turretSS = new TurretSS(turret, encoder, PIDTuneTurret.pidf, MainV1E.lastTurretPos);
         turretSS.setWrapAngles(-170, 170);
         turretSS.update(follower);
         telemetryM.update();

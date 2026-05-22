@@ -33,7 +33,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.old.ShooterSS_OLD;
 import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
-import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 import org.firstinspires.ftc.teamcode.utils.LynxUtils;
@@ -127,7 +127,7 @@ public class MainV2 extends OpMode {
                 .prompt("start_pos", new OptionPrompt<>("Starting Position", MainV1E.StartPos.FAR, MainV1E.StartPos.CLOSE))
                 .onComplete(this::onPromptsComplete);
         // hardware
-        turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        turretPID = new PIDController(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
@@ -207,7 +207,7 @@ public class MainV2 extends OpMode {
         strips.setPosition(stripsCpos = initGameStrips); // white
         pinpoint.recalibrateIMU();
         // subsystems
-        turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.FAR.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, turretOffsetB, MainV1E.lastTurretPos);
+        turretSS = new TurretSS_OLD(turretPID, PIDDualTuneTurret.FAR.F, turret, indexer, PIDDualTuneTurret.TPR, PIDDualTuneTurret.ratio, turretOffsetB, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS_OLD(shooterPID, shooterR, shooterL, hoodR, hoodL);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
         turretSS.setWrapAngles(-170, 170);
@@ -270,16 +270,16 @@ public class MainV2 extends OpMode {
         Pose redPos = new Pose(138, 138, 45);
         // debugs
         telemetryM.setDebug(debugMode);
-        turretPID.setPID(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        turretPID.setPID(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
-        turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
+        turretSS.updatePID(turretPID, PIDDualTuneTurret.FAR.F);
         turretSS.setTurretOffset(redSide ? turretOffsetR : turretOffsetB);
         shooterSS.updatePID(shooterPID); // woahhh
         shooterSS.setShooterOffset(shooterOffset);
         shooterSS.setPoses(bluePos, redPos); // woah
         turretSS.setPoses(bluePos, redPos);
         // vars
-        turretCpos = (-indexer.getCurrentPosition() / (PIDTuneTurret.TPR * PIDTuneTurret.ratio)) * 360;
+        turretCpos = (-indexer.getCurrentPosition() / (PIDDualTuneTurret.TPR * PIDDualTuneTurret.ratio)) * 360;
         if (gameTimer.getElapsedTimeSeconds() < 100) stripsCpos = midGameStrips;
         if (gameTimer.getElapsedTimeSeconds() > 100) stripsCpos = endGameStrips;
         // status

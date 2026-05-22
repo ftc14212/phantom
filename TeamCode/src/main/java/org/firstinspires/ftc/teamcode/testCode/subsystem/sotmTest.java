@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.seattlesolvers.solverslib.controller.PIDController;
 import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 
@@ -20,6 +19,7 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
 import org.firstinspires.ftc.teamcode.teleOp.MainV3;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedDcMotorEx;
@@ -64,7 +64,7 @@ public class sotmTest extends OpMode {
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         DcMotorEx encoder = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
         shooterR.setDirection(DcMotorEx.Direction.REVERSE);
-        turretSS = new TurretSS(turret, encoder, PIDTuneTurret.FAR, PIDTuneTurret.CLOSE, MainV1E.lastTurretPos);
+        turretSS = new TurretSS(turret, encoder, PIDTuneTurret.pidf, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
         shooterSS.setPoses(MainV3.getShooterLUT(), 15.1, 124.9, MainV3.getHoodLut(), 15.1, 124.9);
         turretSS.setWrapAngles(-170, 170);

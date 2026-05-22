@@ -12,14 +12,11 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
-import org.firstinspires.ftc.teamcode.teleOp.MainV2;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
-import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
-import org.firstinspires.ftc.teamcode.vars.MainV1E;
 
 import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
@@ -37,7 +34,7 @@ public class measureShooter extends LinearOpMode {
     @Override
     public void runOpMode() {
         // hardware
-        PIDController turretPID = new PIDController(Math.sqrt(PIDTuneTurret.FAR.P), PIDTuneTurret.FAR.I, PIDTuneTurret.FAR.D);
+        PIDController turretPID = new PIDController(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         TelemetryM telemetryM = new TelemetryM(telemetry, debugMode);
         Follower follower = Constants.createFollower(hardwareMap);
         // motors
@@ -58,7 +55,7 @@ public class measureShooter extends LinearOpMode {
         stopper.scaleRange(0.42, 1);
         pivot.scaleRange(0, 0.375);
         hood.scaleRange(0, 0.37);
-        // reverse
+        // reverse`
         indexer.setDirection(DcMotorEx.Direction.REVERSE);
         shooterR.setDirection(DcMotorEx.Direction.REVERSE);
         // colors
@@ -74,7 +71,7 @@ public class measureShooter extends LinearOpMode {
         if (opModeIsActive()) {
             while (opModeIsActive()) {
                 if(gamepad1.left_bumper) stopper.setPosition(0);
-                else stopper.setPosition(0.55);
+                else stopper.setPosition(0.5);
                 /*
                 turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
                 turretSS.setTurretOffset(MainV2.turretOffsetB);

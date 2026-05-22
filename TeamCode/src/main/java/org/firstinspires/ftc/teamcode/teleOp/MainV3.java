@@ -22,7 +22,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
@@ -32,6 +31,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedDcMotorEx;
@@ -184,7 +184,7 @@ public class MainV3 extends OpMode {
         strips.setPosition(stripsCpos = initGameStrips);
         pinpoint.recalibrateIMU();
         // subsystems
-        turretSS = new TurretSS(turret, indexer, PIDTuneTurret.FAR, PIDTuneTurret.CLOSE, MainV1E.lastTurretPos);
+        turretSS = new TurretSS(turret, indexer, PIDTuneTurret.pidf, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
         shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
         turretSS.setWrapAngles(-170, 170);
@@ -299,7 +299,7 @@ public class MainV3 extends OpMode {
             stopperCpos = 0.5;
             if (indexerOn) indexer.setPower(0.9);
             intake.setPower(1);
-            if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexer.setPower(0);;
+            if (!beams.getState()) indexer.setPower(0);;
             if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10)  {
                 // ledCpos = 0.667;
             }
@@ -377,18 +377,18 @@ public class MainV3 extends OpMode {
     public static InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 1200);
-        lut.add(25, 1250);
-        lut.add(35, 1350);
-        lut.add(45, 1460);
-        lut.add(55, 1520);
-        lut.add(65, 1585);
-        lut.add(75, 1620);
-        lut.add(85, 1740);
-        lut.add(105, 1880); // top corner
-        lut.add(115, 1980); // far left
-        lut.add(125, 2150); // far mid
-        lut.add(138, 2150); // far right
+        lut.add(26, 1500);
+        lut.add(30, 1800);
+        lut.add(35, 1800);
+        lut.add(40, 1850);
+        lut.add(45, 1850);
+        lut.add(50, 1900);
+        lut.add(55, 2000);
+        lut.add(60, 2150);
+        lut.add(65, 0000);
+        lut.add(70, 0000);
+        lut.add(75, 0000);
+        lut.add(80, 0000);
         // finish
         lut.createLUT();
         return lut;
@@ -396,18 +396,18 @@ public class MainV3 extends OpMode {
     public static InterpLUT getHoodLut() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(15, 0.1);
-        lut.add(25, 0.2);
-        lut.add(35, 0.3);
-        lut.add(45, 0.6);
-        lut.add(55, 0.75);
-        lut.add(65, 0.95);
-        lut.add(75, 0.98);
-        lut.add(85, 1);
-        lut.add(105, 1); // top corner
-        lut.add(115, 1); // far left
-        lut.add(125, 1); // far mid
-        lut.add(138, 1); // far right
+        lut.add(26, 0.0);
+        lut.add(30, 0.15);
+        lut.add(35, 0.2);
+        lut.add(40, 0.2);
+        lut.add(45, 0.23);
+        lut.add(50, 0.25);
+        lut.add(55, 0.28);
+        lut.add(60, 0.35);
+        lut.add(65, 0.);
+        lut.add(70, 0.);
+        lut.add(75, 0.);
+        lut.add(80, 0.);
         // finish
         lut.createLUT();
         return lut;

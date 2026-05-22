@@ -61,17 +61,15 @@ public class SquidTuneTurret extends OpMode {
      **/
     @Override
     public void loop() {
-        // Update PID values
-        controller.setPIDF(pidf.P, pidf.I, pidf.D, pidf.F);
-        // Get current positions
-        double turretOR = (TPR * ratio);
-        double currentPos = (turretEM.getCurrentPosition() / turretOR) * 360;
+        telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
+        controller = new SquIDFController(pidf.P, pidf.I, pidf.D, pidf.F);
+        double currentPos = (turretEM.getCurrentPosition() / (TPR * ratio)) * 360.0;
         double error = TARGET - currentPos;
-        // Calculate PID
-        controller.setSetPoint(TARGET);
-        double pid = controller.calculate(currentPos);
-        // Apply power
-        turret.setPower(-Math.max(-1, Math.min(1, pid))); // leader
+        double pid = controller.calculate(currentPos, TARGET);
+        if (Double.isNaN(pid)) pid = 0;
+        pid = Math.max(-1, Math.min(1, pid));
+        if (Math.abs(error) < tolerance) pid = 0;
+        turret.setPower(pid);
         // telemetry for debugging
         telemetry.addData("PIDF", "P: " + pidf.P + " I: " + pidf.I + " D: " + pidf.D + " F: " + pidf.F);
         telemetry.addData("target", TARGET);

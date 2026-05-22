@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.controller.SquIDFController;
 
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
@@ -24,10 +25,11 @@ public class SquidTuneTurret extends OpMode {
     // private AnalogInput elc;
     private SquIDFController controller;
     public static Tune.PIDF pidf = new Tune.PIDF(
-            0.1,
+            0.000025,
             0,
-            0,
-            0);
+            0.01,
+            0.08);
+    public static double tolerance = 30;
     public static double TARGET = 0;
     public static int TPR = 4000; // ticks per revolution
     public static double ratio = (double) 120 / 32;
@@ -47,7 +49,6 @@ public class SquidTuneTurret extends OpMode {
         // reset encoders
         turretEM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // turn on the motors without the built in controller
-        turretEM.setDirection(DcMotorEx.Direction.REVERSE);
         turretEM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // combine both FTCDashboard and the regular telemetry
         // telemetry
@@ -60,22 +61,21 @@ public class SquidTuneTurret extends OpMode {
      **/
     @Override
     public void loop() {
-        // Update PID values
-        controller.setPIDF(pidf.P, pidf.I, pidf.D, pidf.F);
-        // Get current positions
-        double turretOR = (TPR * ratio);
-        double currentPos = (turretEM.getCurrentPosition() / turretOR) * 360;
+        telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
+        controller = new SquIDFController(pidf.P, pidf.I, pidf.D, pidf.F);
+        double currentPos = (turretEM.getCurrentPosition() / (TPR * ratio)) * 360.0;
         double error = TARGET - currentPos;
-        // Calculate PID
         double pid = controller.calculate(currentPos, TARGET);
-        // Apply power
-        turret.setPower(Math.max(-1, Math.min(1, pid))); // leader
+        if (Double.isNaN(pid)) pid = 0;
+        pid = Math.max(-1, Math.min(1, pid));
+        if (Math.abs(error) < tolerance) pid = 0;
+        turret.setPower(pid);
         // telemetry for debugging
         telemetry.addData("PIDF", "P: " + pidf.P + " I: " + pidf.I + " D: " + pidf.D + " F: " + pidf.F);
         telemetry.addData("target", TARGET);
         telemetry.addData("turretCpos", currentPos);
         telemetry.addData("turretPowerRAW", pid);
-        telemetry.addData("turretPower", turret.getPower());
+        telemetry.addData("turretPower", Math.max(-1, Math.min(1, pid)));
         telemetry.addData("error", Math.abs(error));
         telemetry.addData("current ticks", turretEM.getCurrentPosition());
         telemetry.addData("target ticks", TARGET*TPR);

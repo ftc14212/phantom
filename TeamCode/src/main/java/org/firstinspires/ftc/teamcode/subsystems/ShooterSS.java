@@ -42,10 +42,10 @@ public class ShooterSS extends SubsystemBase {
     private boolean redSide = false;
     // config
     private int tolerance = 100;
-    public static double LED_ERROR = 0.278;
-    public static double LED_TARGET = 1;
-    public static double LED_REV = 0.388;
-    public static double LED_REG = 0.611;
+    public static double LED_ERROR = 0.278; // red
+    public static double LED_TARGET = 1; // white
+    public static double LED_REV = 0.388; // yellow
+    public static double LED_REG = 0.611; // blue
     private static double sLutMin = 0;
     private static double sLutMax = 0;
     private double hLutMin = 0;

@@ -75,7 +75,7 @@ public class TurretSS extends SubsystemBase {
         // grab current pos
         currentAngle = (encoder.getCurrentPosition() / (TPR * ratio)) * 360;
         // turret code
-        double profiledTarget = profile.update(target);
+        double profiledTarget = profile.update(wrap(target));
         double pid = controller.calculate(currentAngle, profiledTarget);
         double error = wrap(target - currentAngle);
         double ff = 0;

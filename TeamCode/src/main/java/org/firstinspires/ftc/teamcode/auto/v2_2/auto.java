@@ -40,6 +40,7 @@ import org.firstinspires.ftc.teamcode.teleOp.MainV2;
 import org.firstinspires.ftc.teamcode.teleOp.MainV3;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedDcMotorEx;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
@@ -89,6 +90,7 @@ public class auto extends OpMode {
     public static double pivotCpos = 0.45;
     public static double hoodCpos = 0;
     public static double ledCpos = 0.667;
+    public static double stopperCpos = 0.5;
     public static double stripsCpos = 0.611;
     public static double turretTpos = 0;
     public static double shooterVelo = 0; // update servos r kissing
@@ -300,31 +302,28 @@ public class auto extends OpMode {
                     ran2 = false;
                     timer.resetTimer();
                     timer2.resetTimer();
-                    shooterSS.stopBackSpin();
-                    if (shooterOn) shooterSS.shooterOn(true);
-                    ledCpos = 0.388;
                     intakeGateStarted = false;
                     reached = false;
                     follower.followPath(scoreClose, true);
                     shootCloseStarted = true;
                 }
+                if (shooterOn) shooterSS.align();
                 if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.shootClosePose, 8, 8)) reached2 = true;
                 if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.shootClosePose, 8, 8)) reached2 = true;
                 if (reached2 && shootCloseStarted) {
-                    if (turretOn) turretSS.turretOn(true);
-                    if (shooterR.getVelocity() >= shooterSS.getTargetVelocity()) {
+                    if (turretOn) turretSS.align();
+                    if (shooterSS.atTarget()) {
                         if (!ran2) {
                             timer2.resetTimer();
                             ran2 = true;
                         }
                         if (timer2.getElapsedTime() >= 650) {
                             if (!ran) {
-                                timer.resetTimer();
+                                timer.resetTimer();  // check this line its sus
                                 FEED();
                                 ran = true;
                             }
                         }
-                        ledCpos = 1;
                     }
                     if ((ran && timer.getElapsedTime() >= shootWait) || !shooterOn) {
                         RESET_SHOOTER_TURRET();
@@ -446,7 +445,6 @@ public class auto extends OpMode {
                 break;
             case 5:
                 if (!follower.isBusy()) {
-                    shooterSS.shooterOn(false);
                     RESET_SHOOTER_TURRET();
                     RESET_INTAKE();
                     follower.followPath(park, true);
@@ -462,10 +460,8 @@ public class auto extends OpMode {
             case 0:
                 if (!shootStarted) {
                     RESET_INTAKE();
-                    shooterSS.stopBackSpin();
-                    if (shooterOn) shooterSS.shooterOn(true);
-                    if (turretOn) turretSS.turretOn(true);
-                    ledCpos = 0.388;
+                    if (shooterOn) shooterSS.align();
+                    if (turretOn) turretSS.align();
                     follower.followPath(shootFar, true);
                     shot = 0;
                     timer.resetTimer();
@@ -475,17 +471,16 @@ public class auto extends OpMode {
                 if (alliance == MainV1E.Alliance.RED && follower.atPose(RF.startPose, 5, 5)) reached = true;
                 if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BF.startPose, 5, 5)) reached = true;
                 if (reached) {
-                    if (shooterR.getVelocity() >= shooterSS.getTargetVelocity()) {
+                    if (shooterSS.atTarget()) {
                         if (timer.getElapsedTimeSeconds() >= 1.0) {
                             FEED();
                             shot++;
                             timer.resetTimer();
-                        }
+                        } else RESET_INTAKE();
                     }
                     if (shot >= 3 || !shooterOn || timer.getElapsedTimeSeconds() > 9) {
                         RESET_SHOOTER_TURRET();
                         shot = 0;
-                        shootStarted = false;
                         if (humanPlayer && !humanStarted) setPathState(1);
                         else if (!leaveStarted) setPathState(2);
                     }
@@ -522,36 +517,43 @@ public class auto extends OpMode {
 
 
     public void INTAKE() {
-        pivotCpos = 0.55;// no
+        pivotCpos = 0.06;
+        stopperCpos = 0.5;
+        if (indexerOn) indexer.setPower(0.9);
         intake.setPower(1);
-        if (!beams.getState() || c2.getDistance(DistanceUnit.CM) < 10) indexer.setPower(0);
-        else if (indexerOn) indexer.setPower(1);
-        shooterSS.backSpin(0);
+        if (!beams.getState()) {
+            indexerOn = false;
+            indexer.setPower(0);
+        }
+        if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10)  {
+             shooterSS.setLeds(0.667);
+        }
     }
 
     public void OUTTAKE() {
-        indexerOn = true;// no
-        pivotCpos = 0.55;
-        indexer.setPower(1);
-        intake.setPower(-1);// :P
+        indexerOn = true;
+        pivotCpos = 0.06;
+        stopperCpos = 0.5;
+        indexer.setPower(-1);
+        intake.setPower(-1);
     }
     public void RESET_INTAKE() {
-        pivotCpos = 0.45;
+        pivotCpos = 0;
         indexer.setPower(0);
         intake.setPower(0);
-        shooterVelo = 0;
+        shooterSS.reset();
         indexerOn = true;
     }
     public void FEED() {
         indexerOn = true;
-        pivotCpos = 0.45;
-        indexer.setPower(1);
+        pivotCpos = 0;
+        stopperCpos = 0;
+        indexer.setPower(0.9);
         intake.setPower(1);
     }
     public void RESET_SHOOTER_TURRET() {
-        // shooterSS.shooterOn(false);
-        turretSS.turretOn(false); // i could so go for a hot coca right now
-        ledCpos = 0.667;
+        shooterSS.reset();
+        turretSS.reset();
     }
 
     /**
@@ -623,12 +625,14 @@ public class auto extends OpMode {
         pivot.setPosition(pivotCpos = 0.45);
         led.setPosition(ledCpos = 0.667); // david is mean he is mad
         strips.setPosition(stripsCpos = initGameStrips); // white
+        stopper.setPosition(stopperCpos = 0.5);
         pinpoint.recalibrateIMU();
         // colors
         gamepad1.setLedColor(0, 255, 255, -1);
         gamepad2.setLedColor(0, 255, 0, -1);
         LynxUtils.setLynxColor(255, 0, 255);
         // subsystems
+        turretSS = new TurretSS(turret, indexer, PIDTuneTurret.pidf, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
         shooterSS.setPoses(MainV3.getShooterLUT(), 15.1, 124.9, MainV3.getHoodLut(), 15.1, 124.9);
         shooterSS.update(follower);
@@ -650,7 +654,7 @@ public class auto extends OpMode {
         redSide = alliance == MainV1E.Alliance.RED;
         MainV2.redSide = redSide;
         MainV1E.redSideS = redSide;
-        turretSS = new TurretSS_OLD(turretPID, PIDDualTuneTurret.FAR.F, turret, indexer, PIDDualTuneTurret.TPR, PIDDualTuneTurret.ratio, redSide ? turretOffsetR : turretOffsetB, MainV1E.lastTurretPos);
+        turretSS.setOffset(redSide ? turretOffsetR : turretOffsetB);
         turretSS.setRedSide(redSide);
         shooterSS.setRedSide(redSide);
         turretSS.setWrapAngles(-180, 180);
@@ -675,16 +679,12 @@ public class auto extends OpMode {
     public void loop() {
         Pose bluePos = new Pose(9, 138, 135); // BYE
         Pose redPos = new Pose(138, 138, 45);
-        turretPID.setPID(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
-        shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F);
-        turretSS.updatePID(turretPID, PIDDualTuneTurret.FAR.F);
-        turretSS.setTurretOffset(alliance == MainV1E.Alliance.RED ? turretOffsetR : turretOffsetB);
-        shooterSS.updatePID(shooterPID); // woahhh
-        shooterSS.setShooterOffset(shooterOffset);
-        shooterSS.setPoses(bluePos, redPos); // woah
+        shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P, PIDTuneShooterSdk.I, PIDTuneShooterSdk.D, PIDTuneShooterSdk.F);
+        turretSS.setOffset(redSide ? turretOffsetR : turretOffsetB);
+        shooterSS.updatePID(shooterPID);
+        shooterSS.setOffset(shooterOffset);
+        shooterSS.setPose(bluePos, redPos);
         turretSS.setPoses(bluePos, redPos);
-        if(!turretOn) turretSS.turretOn(false);
-        if(!shooterOn) shooterSS.shooterOn(false);
         follower.setMaxPower(wheelSpeed);
         if (startPos == MainV1E.StartPos.FAR) farStates();
         if (startPos == MainV1E.StartPos.CLOSE) closeStates();
@@ -692,12 +692,9 @@ public class auto extends OpMode {
         pivot.setPosition(pivotCpos);
         led.setPosition(ledCpos);
         // shooter code
-        shooterSS.alignShooter();
         shooterSS.update(follower);
         // turret code
-        if (turretSS.alignTurret() == 0 && turretTpos != 0) turretSS.updateTurretTpos(turretTpos);
-        else if (turretSS.alignTurret() != 0) turretTpos = turretSS.turretTpos;
-        turretSS.alignTurret();
+        if (turretSS.getTarget() == 0 && turretTpos != 0) turretSS.setTarget(turretTpos);
         turretSS.update(follower);
         follower.update();
         MainV1E.lastAutoPos = follower.getPose();

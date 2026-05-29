@@ -299,9 +299,12 @@ public class MainV3 extends OpMode {
             stopperCpos = 0.5;
             if (indexerOn) indexer.setPower(0.9);
             intake.setPower(1);
-            if (!beams.getState()) indexer.setPower(0);;
+            if (!beams.getState()) {
+                indexerOn = false;
+                indexer.setPower(0);
+            }
             if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10)  {
-                // ledCpos = 0.667;
+                shooterSS.setLeds(0.667);
             }
         }
         if (OUTTAKE) {
@@ -338,15 +341,15 @@ public class MainV3 extends OpMode {
             shooterSS.reset();
         }
         // fixes
-        if (gamepad2.dpadRightWasPressed()) {
+        if (gamepad1.dpadRightWasPressed()) {
             turretOffsetR += 1;
             turretOffsetB += 1;
         }
-        if (gamepad2.dpadLeftWasPressed()) {
+        if (gamepad1.dpadLeftWasPressed()) {
             turretOffsetR -= 1;
             turretOffsetB -= 1;
         }
-        if (gamepad2.dpadDownWasReleased()) {
+        if (gamepad1.dpadDownWasReleased()) {
             if (redSide) follower.setPose(new Pose(126, 119, Math.PI - Math.toRadians(144)));
             else follower.setPose(new Pose(18, 119, Math.toRadians(144)));
         }

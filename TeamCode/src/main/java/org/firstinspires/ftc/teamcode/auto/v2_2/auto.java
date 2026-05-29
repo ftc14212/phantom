@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto.v2;
+package org.firstinspires.ftc.teamcode.auto.v2_2;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -10,7 +10,6 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
@@ -33,12 +32,16 @@ import org.firstinspires.ftc.teamcode.auto.v2.points.BF;
 import org.firstinspires.ftc.teamcode.auto.v2.points.RC;
 import org.firstinspires.ftc.teamcode.auto.v2.points.RF;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
+import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
 import org.firstinspires.ftc.teamcode.subsystems.old.ShooterSS_OLD;
 import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.teleOp.MainV2;
+import org.firstinspires.ftc.teamcode.teleOp.MainV3;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
+import org.firstinspires.ftc.teamcode.utils.CombinedDcMotorEx;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 import org.firstinspires.ftc.teamcode.utils.LynxUtils;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
@@ -49,7 +52,6 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
-@Disabled
 @Configurable
 @Autonomous(name = "auto", group = ".ftc14212")
 public class auto extends OpMode {
@@ -60,7 +62,6 @@ public class auto extends OpMode {
     Timer gameTimer = new Timer();
     private Timer timer;
     private Timer timer2;
-    private Timer shotTimer;
     // gamepads
     Gamepad currentGamepad1;
     Gamepad currentGamepad2;
@@ -82,8 +83,8 @@ public class auto extends OpMode {
     PIDController turretPID;
     PIDFCoefficients shooterPID;
     // subsystems
-    TurretSS_OLD turretSS;
-    ShooterSS_OLD shooterSS;
+    TurretSS turretSS;
+    ShooterSS shooterSS;
     // positions
     public static double pivotCpos = 0.45;
     public static double hoodCpos = 0;
@@ -572,7 +573,6 @@ public class auto extends OpMode {
         MainV1E.lastAutoPos = null;
         timer = new Timer();
         timer2 = new Timer();
-        shotTimer = new Timer();
         loopTime = new ElapsedTime();
         loopTime.reset();
         // hardware
@@ -629,8 +629,8 @@ public class auto extends OpMode {
         gamepad2.setLedColor(0, 255, 0, -1);
         LynxUtils.setLynxColor(255, 0, 255);
         // subsystems
-        shooterSS = new ShooterSS_OLD(shooterPID, shooterR, shooterL, hoodR, hoodL);
-        shooterSS.setPoses(MainV2.getShooterLUT(), 15.1, 124.9, MainV2.getHoodLut(), 15.1, 124.9);
+        shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
+        shooterSS.setPoses(MainV3.getShooterLUT(), 15.1, 124.9, MainV3.getHoodLut(), 15.1, 124.9);
         shooterSS.update(follower);
     }
 

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 
@@ -35,6 +36,7 @@ public class turretAligning extends OpMode {
     TelemetryM telemetryM;
     CachingServo led; // 2x gobilda led lights RGB
     Follower follower;
+    ElapsedTime loopTime;
     public static PPPoint.pose bluePos = new PPPoint.pose(6, 138);
     public static PPPoint.pose redPos = new PPPoint.pose(6, 138);
     @Override
@@ -51,10 +53,12 @@ public class turretAligning extends OpMode {
         DcMotorEx encoder = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "indexer")); // 1150 rpm
         encoder.setDirection(DcMotorEx.Direction.REVERSE);
         led.setPosition(1);
+        loopTime = new ElapsedTime();
         turretSS = new TurretSS(turret, encoder, PIDTuneTurret.pidf, MainV1E.lastTurretPos);
         turretSS.setWrapAngles(-170, 170);
         turretSS.update(follower);
         telemetryM.update();
+        loopTime.reset();
     }
 
     public void onPromptsComplete() {
@@ -103,7 +107,9 @@ public class turretAligning extends OpMode {
             led.setPosition(redSide ? 0.276 : 0.611);
             turretSS.reset();
         }
+        telemetryM.addData(true, "loop times", loopTime.milliseconds());
         telemetryM.addLine(turretSS.telemetry());
+        loopTime.reset();
         follower.update();
         telemetryM.update();
     }

@@ -11,6 +11,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -40,9 +41,11 @@ import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 import org.firstinspires.ftc.teamcode.vars.MainV1E;
 
-import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
-import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
-import dev.frozenmilk.dairy.cachinghardware.CachingServo;
+import java.util.List;
+
+import org.firstinspires.ftc.teamcode.utils.CachingCRServo;
+import org.firstinspires.ftc.teamcode.utils.CachingDcMotorEx;
+import org.firstinspires.ftc.teamcode.utils.CachingServo;
 
 @Configurable
 @TeleOp(name="Main v3", group=".ftc14212")
@@ -70,12 +73,13 @@ public class MainV3 extends OpMode {
     public static boolean odoDrive = true;
     // config stuff
     public static boolean redSide;
-    public static boolean debugMode = true;
+    public static boolean debugMode = false;
     public static double turretOffsetR = 0;
     public static double turretOffsetB = 0;
     public static double shooterOffset = -16;
     private final Prompter prompter = new Prompter(this);
     // hardware
+    private List<LynxModule> allHubs;
     private TelemetryM telemetryM;
     private Follower follower;
     DigitalChannel beams;
@@ -185,8 +189,9 @@ public class MainV3 extends OpMode {
         // subsystems
         turretSS = new TurretSS(turret, indexer, PIDTuneTurret.pidf, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
-        shooterSS.setPoses(getShooterLUT(), 26.1, 79.9, getHoodLut(), 26.1, 79.9);
+        shooterSS.setPoses(getShooterLUT(), 26.1, 64.9, getHoodLut(), 26.1, 64.9);
         turretSS.setWrapAngles(-170, 170);
+        shooterSS.setIdle(500);
         turretSS.update(follower);
         shooterSS.update(follower);
         // misc
@@ -201,6 +206,8 @@ public class MainV3 extends OpMode {
             shooterSS.setRedSide(true);
             MainV1E.redSideS = false;
         }
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         loopTime.reset();
     }
 
@@ -246,9 +253,11 @@ public class MainV3 extends OpMode {
         shooterPID = new PIDFCoefficients(PIDTuneShooterSdk.P, PIDTuneShooterSdk.I, PIDTuneShooterSdk.D, PIDTuneShooterSdk.F);
         turretSS.setOffset(redSide ? turretOffsetR : turretOffsetB);
         shooterSS.updatePID(shooterPID);
+        turretSS.updatePID(PIDTuneTurret.pidf);
         shooterSS.setOffset(shooterOffset);
         shooterSS.setPose(redPos, bluePos);
         turretSS.setPoses(bluePos, redPos);
+        for (LynxModule hub : allHubs) hub.clearBulkCache();
         // vars
         if (gameTimer.getElapsedTimeSeconds() < 100) stripsCpos = midGameStrips;
         if (gameTimer.getElapsedTimeSeconds() > 100) stripsCpos = endGameStrips;
@@ -361,7 +370,7 @@ public class MainV3 extends OpMode {
         follower.update();
         // telemetry
         telemetryM.addLine("PHANTOM Team 14212!");
-        telemetryM.addData(true, "loop times", loopTime.milliseconds());
+        telemetryM.addData("loop times", loopTime.milliseconds());
         telemetryM.addData(true, "pivot", pivot.getPosition());
         telemetryM.addData(true, "hood", hood.getPosition());
         telemetryM.addData(true, "indexer", indexer.getPower());
@@ -380,18 +389,17 @@ public class MainV3 extends OpMode {
     public static InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(26, 1280);
-        lut.add(30, 1500);
-        lut.add(35, 1500);
-        lut.add(40, 1500);
-        lut.add(45, 1550);
-        lut.add(50, 1575);
-        lut.add(55, 1700);
-        lut.add(60, 1750);
-        lut.add(65, 1775);
-        lut.add(70, 2250);
-        lut.add(75, 2500);
-        lut.add(80, 0000);
+        lut.add(26, 1750); // 50
+        lut.add(30, 1800); // 25
+        lut.add(35, 1825); // 50
+        lut.add(40, 1875); // 25
+        lut.add(45, 1900); // 75
+        lut.add(50, 1975); // 15
+        lut.add(55, 1990); // 25
+        lut.add(60, 2015); // 175
+        lut.add(65, 2053);
+        lut.add(70, 2100);
+        lut.add(75, 2140);
         // finish
         lut.createLUT();
         return lut;
@@ -400,17 +408,16 @@ public class MainV3 extends OpMode {
         InterpLUT lut = new InterpLUT();
         // add the data
         lut.add(26, 0.0);
-        lut.add(30, 0.2);
+        lut.add(30, 0.0);
         lut.add(35, 0.2);
-        lut.add(40, 0.25);
-        lut.add(45, 0.3);
-        lut.add(50, 0.33);
-        lut.add(55, 0.35);
-        lut.add(60, 0.36);
-        lut.add(65, 0.4);
-        lut.add(70, 0.4);
-        lut.add(75, 0.38);
-        lut.add(80, 0.);
+        lut.add(40, 0.2);
+        lut.add(45, 0.23);
+        lut.add(50, 0.23);
+        lut.add(55, 0.27);
+        lut.add(60, 0.27);
+        lut.add(65, 0.3);
+        lut.add(70, 0.3);
+        lut.add(75, 0.33);
         // finish
         lut.createLUT();
         return lut;

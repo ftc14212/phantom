@@ -19,12 +19,12 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 @Configurable
 @Autonomous(name="PID Tune Shooter sdk", group="test_ftc14212")
 public class PIDTuneShooterSdk extends OpMode {
-    private CachingDcMotorEx shooterR;
-    private CachingDcMotorEx shooterL;
+    private DcMotorEx shooterR;
+    private DcMotorEx shooterL;
     public static double P = 55;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 12;
+    public static double F = 13;
     public static double TARGET = 0; // 3100 max
     TelemetryM telemetryM;
     /**
@@ -35,8 +35,8 @@ public class PIDTuneShooterSdk extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, PanelsTelemetry.INSTANCE.getTelemetry().getWrapper());
         telemetryM = new TelemetryM(telemetry, true);
         // hardware
-        shooterR = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterR"));
-        shooterL = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterL"));
+        shooterR = hardwareMap.get(DcMotorEx.class, "shooterR");
+        shooterL = hardwareMap.get(DcMotorEx.class, "shooterL");
         // reverse motor
         shooterR.setDirection(DcMotorSimple.Direction.REVERSE);
         // turn on the motors without the built in controller

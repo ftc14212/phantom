@@ -25,9 +25,9 @@ public class PIDTuneTurret extends OpMode {
     private PIDController controller;
     private TrapezoidalMotionProfile profile;
     public static Tune.PIDF pidf = new Tune.PIDF(
-            0.02,
+            0.008,
             0,
-            0.0001,
+            0.00025,
             0.09
     );
     public static double TARGET = 0;

@@ -42,6 +42,7 @@ public class ShooterSS extends SubsystemBase {
     private boolean redSide = false;
     // config
     private int tolerance = 100;
+    private double idle;
     public static double LED_ERROR = 0.278; // red
     public static double LED_TARGET = 1; // white
     public static double LED_REV = 0.388; // yellow
@@ -62,6 +63,7 @@ public class ShooterSS extends SubsystemBase {
         this.status = ShooterS.STOPPED;
         this.lastStatus = null;
         this.pid = pid;
+        this.idle = 0;
         // init
         motors.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motors.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -79,8 +81,8 @@ public class ShooterSS extends SubsystemBase {
                     motors.getCurrent(i, CurrentUnit.MILLIAMPS) < 50
                 ) status = ShooterS.ERROR;
             // status
-            if (target == 0) {
-                if (motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.FLOAT) status = ShooterS.FLOATING;
+            if (target == idle) {
+                if (motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.FLOAT && idle != 0) status = ShooterS.FLOATING;
                 else status = ShooterS.BRAKING;
             } else if (atTarget()) status = ShooterS.AT_TARGET;
             else status = ShooterS.REVVING;
@@ -139,8 +141,11 @@ public class ShooterSS extends SubsystemBase {
         leds.setPosition(ledCpos);
     }
     public void reset() {
-        setTarget(0);
+        setTarget(idle);
         setHoodCpos(0);
+    }
+    public void setIdle(double idle) {
+        this.idle = idle;
     }
     public void setTolerance(int tolerance) {
         this.tolerance = tolerance;
@@ -179,6 +184,9 @@ public class ShooterSS extends SubsystemBase {
     // getters
     public boolean atTarget() {
         return motors.getVelocity() >= target - tolerance && motors.getVelocity() <= target + tolerance;
+    }
+    public double getIdle() {
+        return idle;
     }
     public int getTolerance() {
         return tolerance;

@@ -94,16 +94,17 @@ public class turretAligning extends OpMode {
         // poses
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         turretSS.setOffset(turretOffset);
-        turretSS.setPoses(bluePos.getPose(), redPos.getPose());
+        turretSS.setPoses(redPos.getPose(), bluePos.getPose());
         turretSS.update(follower);
         if (gamepad1.left_bumper) {
             turretSS.align();
             led.setPosition(0.388);
         } else {
-            led.setPosition(redSide ? 0.278 : 0.611);
+            led.setPosition(redSide ? 0.276 : 0.611);
             turretSS.reset();
         }
         telemetryM.addLine(turretSS.telemetry());
+        follower.update();
         telemetryM.update();
     }
 }

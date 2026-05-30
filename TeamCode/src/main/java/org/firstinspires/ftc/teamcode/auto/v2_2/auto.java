@@ -634,7 +634,7 @@ public class auto extends OpMode {
         // subsystems
         turretSS = new TurretSS(turret, indexer, PIDTuneTurret.pidf, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
-        shooterSS.setPoses(MainV3.getShooterLUT(), 15.1, 124.9, MainV3.getHoodLut(), 15.1, 124.9);
+        shooterSS.setPoses(MainV3.getShooterLUT(), 26.1, 79.9, MainV3.getHoodLut(), 26.1, 79.9);
         shooterSS.update(follower);
     }
 

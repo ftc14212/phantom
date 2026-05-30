@@ -34,6 +34,7 @@ public class TurretSS extends SubsystemBase {
     private Pose bluePos = new Pose();
     private Pose targetPos = bluePos;
     private boolean redSide = false;
+    private double profiledTarget;
     // config
     private int tolerance = 10;
     private final PIDController controller;
@@ -56,8 +57,13 @@ public class TurretSS extends SubsystemBase {
         this.profile = new TrapezoidalMotionProfile(maxVel, maxAccel);
         profile.reset(0);
         // init
-        if (lastTurretPos != -999) currentAngle = lastTurretPos;
-        else encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (lastTurretPos != -999) {
+            currentAngle = lastTurretPos;
+            profile.reset(lastTurretPos);
+        } else {
+            profile.reset(0);
+            encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
         encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     // methods
@@ -75,9 +81,10 @@ public class TurretSS extends SubsystemBase {
         // grab current pos
         currentAngle = (encoder.getCurrentPosition() / (TPR * ratio)) * 360;
         // turret code
-        double profiledTarget = profile.update(wrap(target));
+        profiledTarget = profile.update(target);
         double pid = controller.calculate(currentAngle, profiledTarget);
-        double error = wrap(target - currentAngle);
+        // feedforward
+        double error = profiledTarget - currentAngle;
         double ff = 0;
         if (Math.abs(error) > 2) ff = Math.signum(error) * kF;
         double rawPower = pid + ff;
@@ -91,7 +98,7 @@ public class TurretSS extends SubsystemBase {
         // angle from robot to target
         double angleToGoal = Math.toDegrees(Math.atan2(dy, dx));
         // turret angle = angle to goal minus robot heading
-        double turretAngle = Math.toDegrees(follower.getHeading()) - angleToGoal;
+        double turretAngle = angleToGoal - Math.toDegrees(follower.getHeading());
         return redSide ?  turretAngle + offset : turretAngle - offset;
     }
     private double sotmAngle() {
@@ -182,7 +189,7 @@ public class TurretSS extends SubsystemBase {
                 "SOTM output: " + wrap(sotmAngle()) + "\n" +
                 "Turret raw Power" + servos.getPower() + "\n" +
                 "Profile velocity" + profile.getVelocity() + "\n" +
-                "Profile Targer" + profile.update(target) + "\n" +
+                "Profile Target" + profiledTarget + "\n" +
                 "-- Poses --\n" +
                 "Follower:" + "\n" +
                 "X: " + follower.getPose().getX() + "\n" +

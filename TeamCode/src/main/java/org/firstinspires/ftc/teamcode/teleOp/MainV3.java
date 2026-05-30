@@ -185,9 +185,8 @@ public class MainV3 extends OpMode {
         // subsystems
         turretSS = new TurretSS(turret, indexer, PIDTuneTurret.pidf, MainV1E.lastTurretPos);
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
-        shooterSS.setPoses(getShooterLUT(), 15.1, 124.9, getHoodLut(), 15.1, 124.9);
+        shooterSS.setPoses(getShooterLUT(), 26.1, 79.9, getHoodLut(), 26.1, 79.9);
         turretSS.setWrapAngles(-170, 170);
-        turretSS.setTarget(0);
         turretSS.update(follower);
         shooterSS.update(follower);
         // misc
@@ -233,6 +232,7 @@ public class MainV3 extends OpMode {
 
     @Override
     public void start() {
+        turretSS.reset();
         gameTimer.resetTimer();
         follower.startTeleopDrive();
     }
@@ -247,7 +247,7 @@ public class MainV3 extends OpMode {
         turretSS.setOffset(redSide ? turretOffsetR : turretOffsetB);
         shooterSS.updatePID(shooterPID);
         shooterSS.setOffset(shooterOffset);
-        shooterSS.setPose(bluePos, redPos);
+        shooterSS.setPose(redPos, bluePos);
         turretSS.setPoses(bluePos, redPos);
         // vars
         if (gameTimer.getElapsedTimeSeconds() < 100) stripsCpos = midGameStrips;
@@ -255,9 +255,9 @@ public class MainV3 extends OpMode {
         // status
         boolean INTAKE = gamepad1.left_trigger > 0.1;
         boolean OUTTAKE = gamepad1.right_trigger > 0.1;
-        boolean FEED = gamepad1.right_bumper;
-        boolean ALIGN_SHOOT = gamepad1.left_bumper;
-        boolean RESET_SHOOTER_TURRET = !currentGamepad1.left_bumper && previousGamepad1.left_bumper;
+        boolean FEED = gamepad1.right_bumper || gamepad2.right_bumper;
+        boolean ALIGN_SHOOT = gamepad1.left_bumper || gamepad2.left_bumper;
+        boolean RESET_SHOOTER_TURRET = (!currentGamepad1.left_bumper && previousGamepad1.left_bumper) || (!currentGamepad2.left_bumper && previousGamepad2.left_bumper);
         boolean RESET_INTAKE = (!currentGamepad1.right_bumper && previousGamepad1.right_bumper) || gamepad1.dpadRightWasReleased() || (!(currentGamepad1.right_trigger > 0.1) && previousGamepad1.right_trigger > 0.1) || (!(currentGamepad1.left_trigger > 0.1) && previousGamepad1.left_trigger > 0.1);
         // gamepad stuff
         previousGamepad1.copy(currentGamepad1);
@@ -380,17 +380,17 @@ public class MainV3 extends OpMode {
     public static InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(26, 1500);
-        lut.add(30, 1800);
-        lut.add(35, 1800);
-        lut.add(40, 1850);
-        lut.add(45, 1850);
-        lut.add(50, 1900);
-        lut.add(55, 2000);
-        lut.add(60, 2150);
-        lut.add(65, 2100);
-        lut.add(70, 0000);
-        lut.add(75, 0000);
+        lut.add(26, 1280);
+        lut.add(30, 1500);
+        lut.add(35, 1500);
+        lut.add(40, 1500);
+        lut.add(45, 1550);
+        lut.add(50, 1575);
+        lut.add(55, 1700);
+        lut.add(60, 1750);
+        lut.add(65, 1775);
+        lut.add(70, 2250);
+        lut.add(75, 2500);
         lut.add(80, 0000);
         // finish
         lut.createLUT();
@@ -400,16 +400,16 @@ public class MainV3 extends OpMode {
         InterpLUT lut = new InterpLUT();
         // add the data
         lut.add(26, 0.0);
-        lut.add(30, 0.15);
+        lut.add(30, 0.2);
         lut.add(35, 0.2);
-        lut.add(40, 0.2);
-        lut.add(45, 0.23);
-        lut.add(50, 0.25);
-        lut.add(55, 0.28);
-        lut.add(60, 0.35);
-        lut.add(65, 0.33);
-        lut.add(70, 0.);
-        lut.add(75, 0.);
+        lut.add(40, 0.25);
+        lut.add(45, 0.3);
+        lut.add(50, 0.33);
+        lut.add(55, 0.35);
+        lut.add(60, 0.36);
+        lut.add(65, 0.4);
+        lut.add(70, 0.4);
+        lut.add(75, 0.38);
         lut.add(80, 0.);
         // finish
         lut.createLUT();

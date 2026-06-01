@@ -46,7 +46,8 @@ import java.util.List;
 
 import org.firstinspires.ftc.teamcode.utils.CachingCRServo;
 import org.firstinspires.ftc.teamcode.utils.CachingDcMotorEx;
-import org.firstinspires.ftc.teamcode.utils.CachingServo;
+
+import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
 @Config
 @Configurable
@@ -69,6 +70,7 @@ public class MainV3 extends OpMode {
     public static boolean turretOn = true;
     public static boolean shooterOn = true;
     boolean indexerOn = true;
+    public static double idle = 900;
     // timers
     ElapsedTime loopTime;
     // odometry
@@ -193,7 +195,7 @@ public class MainV3 extends OpMode {
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
         shooterSS.setPoses(getShooterLUT(), 26.1, 64.9, getHoodLut(), 26.1, 64.9);
         turretSS.setWrapAngles(-170, 170);
-        shooterSS.setIdle(500);
+        shooterSS.setIdle(idle);
         turretSS.update(follower);
         shooterSS.update(follower);
         // misc
@@ -243,6 +245,7 @@ public class MainV3 extends OpMode {
     public void start() {
         shooterSS.reset();
         turretSS.reset();
+        shooterSS.reset();
         gameTimer.resetTimer();
         follower.startTeleopDrive();
         shooterSS.skipAboveCheck();
@@ -261,6 +264,8 @@ public class MainV3 extends OpMode {
         shooterSS.setOffset(shooterOffset);
         shooterSS.setPose(redPos, bluePos);
         turretSS.setPoses(bluePos, redPos);
+        if (shooterOn) shooterSS.setIdle(0);
+        else shooterSS.setIdle(idle);
         for (LynxModule hub : allHubs) hub.clearBulkCache();
         // vars
         if (gameTimer.getElapsedTimeSeconds() < 100) stripsCpos = midGameStrips;
@@ -333,6 +338,8 @@ public class MainV3 extends OpMode {
             stopperCpos = 0;
             indexer.setPower(0.9);
             intake.setPower(1);
+        } else if ((previousGamepad1.right_bumper && !currentGamepad1.right_bumper) || (previousGamepad2.right_bumper && !currentGamepad2.right_bumper)) {
+            stopperCpos = 0.5;
         }
         if (ALIGN_SHOOT) {
             if (shooterSS.atTarget()) {
@@ -346,6 +353,7 @@ public class MainV3 extends OpMode {
         } else if (RESET_SHOOTER_TURRET) {
             shooterSS.reset();
             turretSS.reset();
+            stopperCpos = 0.5;
         }
         if (RESET_INTAKE) {
             pivotCpos = 0;
@@ -397,7 +405,7 @@ public class MainV3 extends OpMode {
         lut.add(30, 1800); // 25
         lut.add(35, 1825); // 50
         lut.add(40, 1875); // 25
-        lut.add(45, 1900); // 75
+        lut.add(45, 2000); // 75
         lut.add(50, 1975); // 15
         lut.add(55, 1990); // 25
         lut.add(60, 2015); // 175
@@ -415,7 +423,7 @@ public class MainV3 extends OpMode {
         lut.add(30, 0.0);
         lut.add(35, 0.2);
         lut.add(40, 0.2);
-        lut.add(45, 0.23);
+        lut.add(45, 0.15);
         lut.add(50, 0.23);
         lut.add(55, 0.27);
         lut.add(60, 0.27);

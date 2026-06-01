@@ -71,8 +71,11 @@ public class MainV3 extends OpMode {
     public static boolean shooterOn = true;
     boolean indexerOn = true;
     public static double idle = 900;
+    public static double transferDelay = 200;
+    boolean ran = false;
     // timers
     ElapsedTime loopTime;
+    ElapsedTime transfer;
     // odometry
     public static boolean odoDrive = true;
     // config stuff
@@ -200,6 +203,7 @@ public class MainV3 extends OpMode {
         shooterSS.update(follower);
         // misc
         loopTime = new ElapsedTime();
+        transfer = new ElapsedTime();
         follower.update();
         beams.setMode(DigitalChannel.Mode.INPUT);
         indexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -213,6 +217,7 @@ public class MainV3 extends OpMode {
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         loopTime.reset();
+        transfer.reset();
     }
 
     public void onPromptsComplete() {
@@ -264,7 +269,7 @@ public class MainV3 extends OpMode {
         shooterSS.setOffset(shooterOffset);
         shooterSS.setPose(redPos, bluePos);
         turretSS.setPoses(bluePos, redPos);
-        if (shooterOn) shooterSS.setIdle(0);
+        if (!shooterOn) shooterSS.setIdle(0);
         else shooterSS.setIdle(idle);
         for (LynxModule hub : allHubs) hub.clearBulkCache();
         // vars
@@ -318,14 +323,21 @@ public class MainV3 extends OpMode {
             if (indexerOn) indexer.setPower(0.9);
             intake.setPower(1);
             if (!beams.getState()) {
-                indexerOn = false;
-                indexer.setPower(0);
+                if (!ran) {
+                    transfer.reset();
+                    ran = true;
+                }
+                if (transfer.milliseconds() > transferDelay) {
+                    indexerOn = false;
+                    indexer.setPower(0);
+                }
             }
             if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10)  {
                 shooterSS.setLeds(0.667);
             }
         }
         if (OUTTAKE) {
+            ran = false;
             indexerOn = true;
             pivotCpos = 0.06;
             stopperCpos = 0.5;
@@ -333,6 +345,7 @@ public class MainV3 extends OpMode {
             intake.setPower(-1);
         }
         if (FEED) {
+            ran = false;
             indexerOn = true;
             pivotCpos = 0;
             stopperCpos = 0;
@@ -349,6 +362,7 @@ public class MainV3 extends OpMode {
             }
             if (turretOn) turretSS.align();
             if(shooterOn) shooterSS.align();
+            ran = false;
             indexerOn = true;
         } else if (RESET_SHOOTER_TURRET) {
             shooterSS.reset();

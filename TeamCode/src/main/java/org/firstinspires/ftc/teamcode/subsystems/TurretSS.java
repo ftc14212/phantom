@@ -13,8 +13,9 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
 import org.firstinspires.ftc.teamcode.subsystems.enums.TurretS;
-import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
+import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
 import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
+import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 import org.firstinspires.ftc.teamcode.utils.SOTM;
 import org.firstinspires.ftc.teamcode.utils.TrapezoidalMotionProfile;
 import org.firstinspires.ftc.teamcode.vars.Tune;
@@ -23,9 +24,9 @@ public class TurretSS extends SubsystemBase {
     // hardware
     private final CombinedCRServo servos;
     private final CombinedServo servo;
-    private final DcMotorEx encoder;
+    private DcMotorEx encoder;
     private final SOTM sotm = new SOTM();
-    private final TrapezoidalMotionProfile profile;
+    private TrapezoidalMotionProfile profile;
     // data
     private double currentAngle = 0;
     private TurretS status;
@@ -39,7 +40,7 @@ public class TurretSS extends SubsystemBase {
     private boolean positional = false;
     // config
     private int tolerance = 10;
-    private final PIDController controller;
+    private PIDController controller;
     private double kF;
     private double offset = 0;
     private final double TPR = PIDTuneTurret.TPR;
@@ -190,11 +191,11 @@ public class TurretSS extends SubsystemBase {
     }
     // telemetry
     public String telemetry() {
-        return("===== Turret Telemetry =====\n" +
+        return "===== Turret Telemetry =====\n" +
                 "-- Positions --\n" +
                 "Turret current pos: " + getCurrentPos() + "\n" +
                 "Turret target pos: " + getTarget() + "\n" +
-                positional ? "Turret servo pos: " + servo.getPosition() + "\n" : "" +
+                (positional ? ("Turret servo pos: " + servo.getPosition() + "\n") : "") +
                 "-- PID Values --\n" +
                 "P: " + controller.getP() + "\n" +
                 "I: " + controller.getI() + "\n" +
@@ -208,21 +209,21 @@ public class TurretSS extends SubsystemBase {
                 "-- Outputs --\n" +
                 "Align Turret output: " + wrap(alignAngle()) + "\n" +
                 "SOTM output: " + wrap(sotmAngle()) + "\n" +
-                positional ? "" : "Turret raw Power" + servos.getPower() + "\n" +
-                "Profile velocity" + profile.getVelocity() + "\n" +
-                "Profile Target" + profiledTarget + "\n" +
+                (positional ? "" : "Turret raw Power: " + servos.getPower() + "\n") +
+                "Profile velocity: " + profile.getVelocity() + "\n" +
+                "Profile Target: " + profiledTarget + "\n" +
                 "-- Poses --\n" +
-                "Follower:" + "\n" +
+                "Follower:\n" +
                 "X: " + follower.getPose().getX() + "\n" +
                 "Y: " + follower.getPose().getY() + "\n" +
                 "heading: " + Math.toDegrees(follower.getHeading()) + "\n" +
-                "\nSOTM pos:" + "\n" +
+                "\nSOTM pos:\n" +
                 "X: " + sotm.predictRobotPose(follower.getPose()).getX() + "\n" +
                 "Y: " + sotm.predictRobotPose(follower.getPose()).getY() + "\n" +
                 "heading: " + Math.toDegrees(sotm.predictRobotPose(follower.getPose()).getHeading()) + "\n" +
-                "\nTarget Goal pos:" + "\n" +
+                "\nTarget Goal pos:\n" +
                 "X: " + targetPos.getX() + "\n" +
                 "Y: " + targetPos.getY() + "\n" +
-                "heading: " + Math.toDegrees(targetPos.getHeading()) + "\n");
+                "heading: " + Math.toDegrees(targetPos.getHeading()) + "\n";
     }
 }

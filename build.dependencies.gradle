@@ -23,7 +23,7 @@ dependencies {
     implementation 'com.pedropathing:ftc:2.0.4' // pedropathing
     implementation 'com.pedropathing:telemetry:0.0.6' // pedropathing telemetry
     // implementation 'com.acmerobotics.dashboard:dashboard:0.5.1' // ftc dashboard
-    implementation 'com.bylazar:fullpanels:1.0.9' // panels
+    // implementation 'com.bylazar:fullpanels:1.0.9' // panels
     // implementation 'xyz.nin1275:metrolib:1.1.3' // MetroLib
     implementation "dev.frozenmilk.dairy:CachingHardware:1.0.0" // CachingHardware
    // implementation("dev.frozenmilk.sinister:Sloth:0.2.4") // sloth

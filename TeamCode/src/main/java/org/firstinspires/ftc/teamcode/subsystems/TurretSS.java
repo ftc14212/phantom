@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.vars.Tune;
 public class TurretSS extends SubsystemBase {
     // hardware
     private final CombinedCRServo servos;
+    private final CombinedServo servo;
     private final DcMotorEx encoder;
     private final SOTM sotm = new SOTM();
     private final TrapezoidalMotionProfile profile;
@@ -35,28 +36,41 @@ public class TurretSS extends SubsystemBase {
     private Pose targetPos = bluePos;
     private boolean redSide = false;
     private double profiledTarget;
+    private boolean positional = false;
     // config
     private int tolerance = 10;
     private final PIDController controller;
     private double kF;
     private double offset = 0;
-    private final double TPR = PIDDualTuneTurret.TPR;
-    private final double ratio = PIDDualTuneTurret.ratio;
+    private final double TPR = PIDTuneTurret.TPR;
+    private final double ratio = PIDTuneTurret.ratio;
     private int minWrap = -210;
     private int maxWrap = 190;
     public static double maxVel = 180;
     public static double maxAccel = 360;
+    public static double positionalRatio = 460.8;
     // init
     public TurretSS(CombinedCRServo servos, DcMotorEx encoder, Tune.PIDF pidf, double lastTurretPos) {
         // variables
         this.servos = servos;
+        this.servo = null;
+        this.positional = false;
+        init(encoder, pidf, lastTurretPos);
+    }
+    public TurretSS(CombinedServo servos, DcMotorEx encoder, Tune.PIDF pidf, double lastTurretPos) {
+        // variables
+        this.servos = null;
+        this.servo = servos;
+        this.positional = true;
+        init(encoder, pidf, lastTurretPos);
+    }
+    private void init(DcMotorEx encoder, Tune.PIDF pidf, double lastTurretPos) {
         this.encoder = encoder;
         this.status = TurretS.ZERO;
         this.controller = new PIDController(pidf.P, pidf.I, pidf.D);
         this.kF = pidf.F;
         this.profile = new TrapezoidalMotionProfile(maxVel, maxAccel);
         profile.reset(0);
-        // init
         if (lastTurretPos != -999) {
             currentAngle = lastTurretPos;
             profile.reset(lastTurretPos);
@@ -82,15 +96,17 @@ public class TurretSS extends SubsystemBase {
         currentAngle = (encoder.getCurrentPosition() / (TPR * ratio)) * 360;
         // turret code
         profiledTarget = profile.update(target);
-        double pid = controller.calculate(currentAngle, profiledTarget);
-        // feedforward
-        double error = profiledTarget - currentAngle;
-        double ff = 0;
-        if (Math.abs(error) > 2) ff = Math.signum(error) * kF;
-        double rawPower = pid + ff;
-        rawPower = Math.max(-1, Math.min(1, rawPower));
-        // apply power
-        servos.setPower(rawPower);
+        if(!positional) {
+            double pid = controller.calculate(currentAngle, profiledTarget);
+            // feedforward
+            double error =  wrap(profiledTarget - currentAngle);
+            double ff = 0;
+            if (Math.abs(error) > 2) ff = Math.signum(error) * kF;
+            double rawPower = pid + ff;
+            rawPower = Math.max(-1, Math.min(1, rawPower));
+            // apply power
+            servos.setPower(rawPower);
+        } else servo.setPosition(degreeToPos(profiledTarget));
     }
     private double alignAngle() {
         double dx = targetPos.getX() - follower.getPose().getX();
@@ -111,6 +127,10 @@ public class TurretSS extends SubsystemBase {
         while (angle > maxWrap) angle -= 360;
         while (angle < minWrap) angle += 360;
         return angle;
+    }
+    public double degreeToPos(double target) {
+        double pos = 0.5 + target / positionalRatio;
+        return Math.max(0.0, Math.min(1.0, pos));
     }
     // setters
     public void align() {
@@ -174,6 +194,7 @@ public class TurretSS extends SubsystemBase {
                 "-- Positions --\n" +
                 "Turret current pos: " + getCurrentPos() + "\n" +
                 "Turret target pos: " + getTarget() + "\n" +
+                positional ? "Turret servo pos: " + servo.getPosition() + "\n" : "" +
                 "-- PID Values --\n" +
                 "P: " + controller.getP() + "\n" +
                 "I: " + controller.getI() + "\n" +
@@ -187,7 +208,7 @@ public class TurretSS extends SubsystemBase {
                 "-- Outputs --\n" +
                 "Align Turret output: " + wrap(alignAngle()) + "\n" +
                 "SOTM output: " + wrap(sotmAngle()) + "\n" +
-                "Turret raw Power" + servos.getPower() + "\n" +
+                positional ? "" : "Turret raw Power" + servos.getPower() + "\n" +
                 "Profile velocity" + profile.getVelocity() + "\n" +
                 "Profile Target" + profiledTarget + "\n" +
                 "-- Poses --\n" +

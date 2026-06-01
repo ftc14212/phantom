@@ -53,6 +53,7 @@ public class ShooterSS extends SubsystemBase {
     private double hLutMax = 0;
     private PIDFCoefficients pid;
     private double offset = 0;
+    private boolean skipAboveCheck = false;
 
     // init
     public ShooterSS(CombinedDcMotorEx motors, CombinedServo servos, Servo leds, PIDFCoefficients pid) {
@@ -76,9 +77,9 @@ public class ShooterSS extends SubsystemBase {
             // emergency stop if something unplugged
             for(int i = 0; i < motors.getMotorsSize(); i++)
                 if (status != ShooterS.STOPPED &&
-                    target > 0 &&
-                    motors.getVelocity(i) < 30 &&
-                    motors.getCurrent(i, CurrentUnit.MILLIAMPS) < 50
+                    target > 30 &&
+                    (motors.getVelocity(i) < 30 ||
+                     motors.getCurrent(i, CurrentUnit.MILLIAMPS) < 50)
                 ) status = ShooterS.ERROR;
             // status
             if (target == idle) {
@@ -181,9 +182,12 @@ public class ShooterSS extends SubsystemBase {
     public void setRedSide(boolean redSide) {
         this.redSide = redSide;
     }
+    public void skipAboveCheck() {
+        skipAboveCheck = !skipAboveCheck;
+    }
     // getters
     public boolean atTarget() {
-        return motors.getVelocity() >= target - tolerance && motors.getVelocity() <= target + tolerance;
+        return motors.getVelocity() >= target - tolerance && (skipAboveCheck || motors.getVelocity() <= target + tolerance);
     }
     public double getIdle() {
         return idle;

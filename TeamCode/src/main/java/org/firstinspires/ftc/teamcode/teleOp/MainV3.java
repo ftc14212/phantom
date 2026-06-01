@@ -1,10 +1,11 @@
 /***
  * MAIN V3
  * @author David Grieas - 14212 MetroBotics
- * coding for our V2.2 Phantom - june 18th
+ * coding for our V2.2 Phantom - june 20th
 ***/
 package org.firstinspires.ftc.teamcode.teleOp;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
@@ -47,6 +48,7 @@ import org.firstinspires.ftc.teamcode.utils.CachingCRServo;
 import org.firstinspires.ftc.teamcode.utils.CachingDcMotorEx;
 import org.firstinspires.ftc.teamcode.utils.CachingServo;
 
+@Config
 @Configurable
 @TeleOp(name="Main v3", group=".ftc14212")
 public class MainV3 extends OpMode {
@@ -95,17 +97,17 @@ public class MainV3 extends OpMode {
     CachingDcMotorEx leftRear; // 312 rpm --> 468 rpm
     CachingDcMotorEx rightFront; // 312 rpm --> 468 rpm
     CachingDcMotorEx rightRear; // 312 rpm --> 468 rpm
-    CachingDcMotorEx shooterL; // 6000 rpm
-    CachingDcMotorEx shooterR; // 6000 rpm
-    CachingDcMotorEx intake; // 1150 rpm --> 575 - 731 rpm
-    CachingDcMotorEx indexer; // 1620 rpm --> 810 rpm
+    CachingDcMotorEx shooterL; // 6000 rpm --> 4800 rpm
+    CachingDcMotorEx shooterR; // 6000 rpm --> 4800 rpm
+    CachingDcMotorEx intake; // 1150 rpm --> 638.9 - 805.6 rpm
+    CachingDcMotorEx indexer; // 1620 rpm --> 900 rpm
     // servos
-    private static CachingServo pivot; // 1x axon max
-    private static CachingServo stopper; // 1x axon mini
-    private static CombinedServo hood; // 2x axon mini
-    private static CachingServo led; // 2x gobilda led lights RGB
-    private static CachingServo strips; // 4x gobilda strip RGB lights
-    private static CombinedCRServo turret; // 2x axon mini
+    CachingServo pivot; // 1x axon max
+    CachingServo stopper; // 1x axon mini
+    CombinedServo hood; // 2x axon mini
+    CachingServo led; // 2x gobilda led lights RGB
+    CachingServo strips; // 4x gobilda strip RGB lights
+    CombinedCRServo turret; // 2x axon mini
     // random
     MainV1E.Alliance alliance;
     MainV1E.StartPos startPos;
@@ -239,9 +241,11 @@ public class MainV3 extends OpMode {
 
     @Override
     public void start() {
+        shooterSS.reset();
         turretSS.reset();
         gameTimer.resetTimer();
         follower.startTeleopDrive();
+        shooterSS.skipAboveCheck();
     }
     @Override
     public void loop() {

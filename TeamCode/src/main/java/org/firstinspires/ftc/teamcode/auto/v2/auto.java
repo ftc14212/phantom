@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto.v2;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
@@ -50,6 +51,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
 @Disabled
+@Config
 @Configurable
 @Autonomous(name = "auto", group = ".ftc14212")
 public class auto extends OpMode {

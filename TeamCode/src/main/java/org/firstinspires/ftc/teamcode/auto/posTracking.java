@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -17,7 +18,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * @version 1.3, 5/26/25
  **/
 
-@Configurable()
+@Config
+@Configurable
 @Autonomous(name = "Position tracking odometry", group = "tools_ftc14212")
 public class posTracking extends OpMode {
     public static double startPosX = 18;

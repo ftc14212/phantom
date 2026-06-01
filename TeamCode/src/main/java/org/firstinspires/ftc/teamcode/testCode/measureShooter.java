@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.testCode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -22,6 +23,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+@Config
 @Configurable
 @TeleOp(name = "measureShooter", group = "test_ftc14212")
 public class measureShooter extends LinearOpMode {

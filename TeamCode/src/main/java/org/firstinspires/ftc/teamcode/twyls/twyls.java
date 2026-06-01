@@ -6,6 +6,8 @@
  ***/
 package org.firstinspires.ftc.teamcode.twyls;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.util.InterpLUT;
@@ -34,7 +36,9 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+@Config
 @Configurable
+@Disabled
 @TeleOp(name="twyls", group=".ftc14212")
 public class twyls extends LinearOpMode {
     /**

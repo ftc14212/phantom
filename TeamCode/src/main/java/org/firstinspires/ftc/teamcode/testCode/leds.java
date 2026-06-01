@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.testCode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -7,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+@Config
 @Configurable
 @TeleOp(name = "leds", group = "test_ftc14212")
 public class leds extends LinearOpMode {

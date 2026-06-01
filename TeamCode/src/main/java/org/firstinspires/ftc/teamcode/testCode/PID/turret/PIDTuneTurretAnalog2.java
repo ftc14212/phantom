@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.testCode.PID.turret;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -11,7 +13,9 @@ import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 
 import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 
+@Config
 @Configurable
+@Disabled
 @Autonomous(name="PID Tune Turret 2", group="test_ftc14212")
 public class PIDTuneTurretAnalog2 extends OpMode {
     private CombinedCRServo turret;

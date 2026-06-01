@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.testCode.PID.shooter;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -14,7 +16,9 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 
+@Config
 @Configurable
+@Disabled
 @Autonomous(name="PID Tune Shooter", group="test_ftc14212")
 public class PIDTuneShooter extends OpMode {
     private CachingDcMotorEx shooterR;

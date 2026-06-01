@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.testCode.subsystem;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.gamepad.PanelsGamepad;
 import com.pedropathing.follower.Follower;
@@ -32,6 +33,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+@Config
 @Configurable
 @TeleOp(name = "SOTM (rahhhh)", group = "test_ftc14212")
 public class sotmTest extends OpMode {

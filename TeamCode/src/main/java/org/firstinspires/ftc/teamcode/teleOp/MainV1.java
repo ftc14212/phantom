@@ -6,6 +6,7 @@
 ***/
 package org.firstinspires.ftc.teamcode.teleOp;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -40,6 +41,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+@Config
 @Configurable
 @TeleOp(name="Main v1", group="old_ftc14212")
 public class MainV1 extends OpMode {

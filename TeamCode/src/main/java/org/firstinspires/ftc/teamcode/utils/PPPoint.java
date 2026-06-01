@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
 import java.util.List;
 
+@Config
 @Configurable
 public class PPPoint {
 

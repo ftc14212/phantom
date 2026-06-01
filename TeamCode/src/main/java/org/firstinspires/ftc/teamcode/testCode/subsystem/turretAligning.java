@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.testCode.subsystem;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
@@ -25,6 +26,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+@Config
 @Configurable
 @TeleOp(name = "turretSS", group = "test_ftc14212")
 public class turretAligning extends OpMode {

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto.v1;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.bylazar.configurables.annotations.Configurable;
@@ -33,6 +34,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
 @Disabled
+@Config
 @Configurable
 @Autonomous(name = "12 baller auto RED", group = ".ftc14212")
 public class auto12RS extends OpMode {

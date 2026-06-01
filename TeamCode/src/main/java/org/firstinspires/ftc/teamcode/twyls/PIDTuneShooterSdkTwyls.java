@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.twyls;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -14,7 +16,9 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 
+@Config
 @Configurable
+@Disabled
 @Autonomous(name="PID Tune Shooter sdk twyls", group="test_ftc14212")
 public class PIDTuneShooterSdkTwyls extends OpMode {
     private CachingDcMotorEx shooterR;

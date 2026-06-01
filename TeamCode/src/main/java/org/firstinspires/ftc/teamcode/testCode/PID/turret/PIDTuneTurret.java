@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.testCode.PID.turret;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.vars.Tune;
 import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 
+@Config
 @Configurable
 @Autonomous(name="PID Tune Turret", group="test_ftc14212")
 public class PIDTuneTurret extends OpMode {

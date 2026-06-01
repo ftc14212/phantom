@@ -7,8 +7,10 @@
 ***/
 package org.firstinspires.ftc.teamcode.testCode.subsystem;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.gamepad.PanelsGamepad;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -16,7 +18,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveSS;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 
+@Config
 @Configurable
+@Disabled
 @TeleOp(name = "swerbe", group = "test_ftc14212")
 public class swerbe extends LinearOpMode {
     /**

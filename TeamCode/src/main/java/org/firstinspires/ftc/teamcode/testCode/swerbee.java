@@ -7,6 +7,7 @@
 ***/
 package org.firstinspires.ftc.teamcode.testCode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.gamepad.PanelsGamepad;
@@ -25,6 +26,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 
 @Disabled
+@Config
 @Configurable
 @TeleOp(name = "swerbee", group = "test_ftc14212")
 public class swerbee extends LinearOpMode {

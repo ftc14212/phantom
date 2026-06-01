@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.twyls;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -16,7 +18,9 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+@Config
 @Configurable
+@Disabled
 @TeleOp(name = "measureShooter twyls", group = "test_ftc14212")
 public class measureShooterTwyls extends LinearOpMode {
     boolean debugMode = true;

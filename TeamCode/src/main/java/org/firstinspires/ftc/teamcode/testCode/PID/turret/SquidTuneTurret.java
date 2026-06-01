@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.testCode.PID.turret;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -16,7 +18,9 @@ import org.firstinspires.ftc.teamcode.vars.Tune;
 import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 
+@Config
 @Configurable
+@Disabled
 @Autonomous(name="Squid Tune Turret", group="test_ftc14212")
 public class SquidTuneTurret extends OpMode {
     private CombinedCRServo turret;

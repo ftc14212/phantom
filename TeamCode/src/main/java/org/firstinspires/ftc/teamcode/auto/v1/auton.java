@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto.v1;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -40,6 +41,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
 @Disabled
+@Config
 @Configurable
 @Autonomous(name = "auto", group = ".ftc14212")
 public class auton extends OpMode {

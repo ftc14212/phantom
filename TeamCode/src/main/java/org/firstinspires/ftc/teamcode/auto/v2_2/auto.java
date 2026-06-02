@@ -89,7 +89,7 @@ public class auto extends OpMode {
     TurretSS turretSS;
     ShooterSS shooterSS;
     // positions
-    public static double pivotCpos = 0.45;
+    public static double pivotCpos = 0.1;
     public static double hoodCpos = 0;
     public static double ledCpos = 0.667;
     public static double stopperCpos = 0.5;
@@ -462,7 +462,6 @@ public class auto extends OpMode {
             case 0:
                 if (!shootStarted) {
                     RESET_INTAKE();
-                    if (shooterOn) shooterSS.align();
                     if (turretOn) turretSS.align();
                     follower.followPath(shootFar, true);
                     shot = 0;
@@ -470,6 +469,7 @@ public class auto extends OpMode {
                     shootStarted = true;
                     reached = false;
                 }
+                if (shooterOn) shooterSS.align();
                 if (alliance == MainV1E.Alliance.RED && follower.atPose(RF.startPose, 5, 5)) reached = true;
                 if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BF.startPose, 5, 5)) reached = true;
                 if (reached) {
@@ -519,7 +519,7 @@ public class auto extends OpMode {
 
 
     public void INTAKE() {
-        pivotCpos = 0.06;
+        pivotCpos = 0.15;
         stopperCpos = 0.5;
         if (indexerOn) indexer.setPower(0.9);
         intake.setPower(1);
@@ -534,13 +534,13 @@ public class auto extends OpMode {
 
     public void OUTTAKE() {
         indexerOn = true;
-        pivotCpos = 0.06;
+        pivotCpos = 0.15;
         stopperCpos = 0.5;
         indexer.setPower(-1);
         intake.setPower(-1);
     }
     public void RESET_INTAKE() {
-        pivotCpos = 0;
+        pivotCpos = 0.1;
         indexer.setPower(0);
         intake.setPower(0);
         shooterSS.reset();
@@ -548,7 +548,7 @@ public class auto extends OpMode {
     }
     public void FEED() {
         indexerOn = true;
-        pivotCpos = 0;
+        pivotCpos = 0.1;
         stopperCpos = 0;
         indexer.setPower(0.9);
         intake.setPower(1);
@@ -624,7 +624,7 @@ public class auto extends OpMode {
         pivot.scaleRange(0, 0.4);
         // starting pos
         hood.setPosition(hoodCpos = 0);
-        pivot.setPosition(pivotCpos = 0.45);
+        pivot.setPosition(pivotCpos = 0.1);
         led.setPosition(ledCpos = 0.667); // david is mean he is mad
         strips.setPosition(stripsCpos = initGameStrips); // white
         stopper.setPosition(stopperCpos = 0.5);

@@ -46,8 +46,7 @@ import java.util.List;
 
 import org.firstinspires.ftc.teamcode.utils.CachingCRServo;
 import org.firstinspires.ftc.teamcode.utils.CachingDcMotorEx;
-
-import dev.frozenmilk.dairy.cachinghardware.CachingServo;
+import org.firstinspires.ftc.teamcode.utils.CachingServo;
 
 @Config
 @Configurable
@@ -188,7 +187,7 @@ public class MainV3 extends OpMode {
         if (MainV1E.lastAutoPos != null) follower.setStartingPose(new Pose(MainV1E.lastAutoPos.getX(), MainV1E.lastAutoPos.getY(), MainV1E.lastAutoPos.getHeading()));
         MainV1E.lastAutoPos = null;
         hood.setPosition(0);
-        pivot.setPosition(pivotCpos = 0);
+        pivot.setPosition(pivotCpos = 0.1);
         led.setPosition(0.611);
         stopper.setPosition(stopperCpos = 0.5);
         strips.setPosition(stripsCpos = initGameStrips);
@@ -318,7 +317,7 @@ public class MainV3 extends OpMode {
         }
         // controls
         if (INTAKE) {
-            pivotCpos = 0.06;
+            pivotCpos = 0.15;
             stopperCpos = 0.5;
             if (indexerOn) indexer.setPower(0.9);
             intake.setPower(1);
@@ -339,7 +338,7 @@ public class MainV3 extends OpMode {
         if (OUTTAKE) {
             ran = false;
             indexerOn = true;
-            pivotCpos = 0.06;
+            pivotCpos = 0.15;
             stopperCpos = 0.5;
             indexer.setPower(-1);
             intake.setPower(-1);
@@ -347,7 +346,7 @@ public class MainV3 extends OpMode {
         if (FEED) {
             ran = false;
             indexerOn = true;
-            pivotCpos = 0;
+            pivotCpos = 0.1;
             stopperCpos = 0;
             indexer.setPower(0.9);
             intake.setPower(1);
@@ -370,7 +369,7 @@ public class MainV3 extends OpMode {
             stopperCpos = 0.5;
         }
         if (RESET_INTAKE) {
-            pivotCpos = 0;
+            pivotCpos = 0.1;
             indexer.setPower(0);
             intake.setPower(0);
             shooterSS.reset();
@@ -410,6 +409,11 @@ public class MainV3 extends OpMode {
         telemetryM.addData(true, "beam breaks", !beams.getState());
         telemetryM.update();
         loopTime.reset();
+    }
+
+    @Override
+    public void stop() {
+        LynxUtils.setLynxColor(0, 255, 0);
     }
 
     public static InterpLUT getShooterLUT() {

@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
 
 public class CachingCRServo implements CRServo {
     private double lastPower;
-    private CRServo servo;
+    private final CRServo servo;
 
     public CachingCRServo(CRServo servo) {
         this.lastPower = 0;

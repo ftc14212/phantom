@@ -11,13 +11,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 public class CachingDcMotorEx implements DcMotorEx {
     private double lastPower;
-    private double power;
-    private DcMotorEx motor;
+    private final DcMotorEx motor;
 
     public CachingDcMotorEx(DcMotorEx motor) {
         this.motor = motor;
         this.lastPower = 0;
-        this.power = 0;
     }
 
     @Override

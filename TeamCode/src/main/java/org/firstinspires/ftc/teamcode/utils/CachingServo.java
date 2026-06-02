@@ -5,10 +5,10 @@ import com.qualcomm.robotcore.hardware.ServoController;
 
 public class CachingServo implements Servo {
     private double lastPos;
-    private Servo servo;
+    private final Servo servo;
     public CachingServo(Servo servo) {
         this.servo = servo;
-        this.lastPos = 0;
+        this.lastPos = Double.NaN;
     }
     @Override
     public ServoController getController() {
@@ -32,7 +32,7 @@ public class CachingServo implements Servo {
 
     @Override
     public void setPosition(double position) {
-        if(lastPos != position) {
+        if (Double.isNaN(lastPos) || Math.abs(position - lastPos) > 0.001) {
             servo.setPosition(position);
             lastPos = position;
         }

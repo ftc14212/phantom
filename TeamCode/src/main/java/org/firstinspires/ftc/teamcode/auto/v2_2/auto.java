@@ -12,7 +12,6 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -28,21 +27,18 @@ import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.auto.v2.points.BC;
-import org.firstinspires.ftc.teamcode.auto.v2.points.BF;
-import org.firstinspires.ftc.teamcode.auto.v2.points.RC;
-import org.firstinspires.ftc.teamcode.auto.v2.points.RF;
+import org.firstinspires.ftc.teamcode.auto.v2_2.points.BC;
+import org.firstinspires.ftc.teamcode.auto.v2_2.points.BF;
+import org.firstinspires.ftc.teamcode.auto.v2_2.points.RC;
+import org.firstinspires.ftc.teamcode.auto.v2_2.points.RF;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSS;
 import org.firstinspires.ftc.teamcode.subsystems.TurretSS;
-import org.firstinspires.ftc.teamcode.subsystems.old.ShooterSS_OLD;
-import org.firstinspires.ftc.teamcode.subsystems.old.TurretSS_OLD;
 import org.firstinspires.ftc.teamcode.teleOp.MainV2;
 import org.firstinspires.ftc.teamcode.teleOp.MainV3;
 import org.firstinspires.ftc.teamcode.testCode.PID.shooter.PIDTuneShooterSdk;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDDualTuneTurret;
 import org.firstinspires.ftc.teamcode.testCode.PID.turret.PIDTuneTurret;
-import org.firstinspires.ftc.teamcode.utils.CombinedCRServo;
 import org.firstinspires.ftc.teamcode.utils.CombinedDcMotorEx;
 import org.firstinspires.ftc.teamcode.utils.CombinedServo;
 import org.firstinspires.ftc.teamcode.utils.LynxUtils;
@@ -50,7 +46,6 @@ import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
 import org.firstinspires.ftc.teamcode.utils.TelemetryM;
 import org.firstinspires.ftc.teamcode.vars.MainV1E;
 
-import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
@@ -81,7 +76,7 @@ public class auto extends OpMode {
     CombinedServo hood; // 2x axon mini
     CachingServo led; // 2x gobilda led lights RGB
     CachingServo strips; // 4x gobilda strip RGB lights
-    CombinedCRServo turret; // 2x axon mini
+    CombinedServo turret; // 2x axon mini
     // pids
     PIDController turretPID;
     PIDFCoefficients shooterPID;
@@ -601,9 +596,9 @@ public class auto extends OpMode {
         CachingServo hoodR = new CachingServo(hardwareMap.get(Servo.class, "hoodR")); // 1x axon mini
         CachingServo hoodL = new CachingServo(hardwareMap.get(Servo.class, "hoodL")); // 1x axon mini
         hood = new CombinedServo(hoodR, hoodL); // 2x axon minis
-        CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1")); // 1x axon mini
-        CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2")); // 1x axon mini
-        turret = new CombinedCRServo(turret1, turret2); // 2x axon minis
+        CachingServo turret1 = new CachingServo(hardwareMap.get(Servo.class, "turret1")); // 1x axon mini
+        CachingServo turret2 = new CachingServo(hardwareMap.get(Servo.class, "turret2")); // 1x axon mini
+        turret = new CombinedServo(turret1, turret2); // 2x axon minis
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         strips = new CachingServo(hardwareMap.get(Servo.class, "strips")); // 4x gobilda strip RGB lights
         stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
@@ -622,6 +617,7 @@ public class auto extends OpMode {
         // limits
         hood.scaleRange(0, 0.38);
         pivot.scaleRange(0, 0.4);
+        stopper.scaleRange(0.42, 1);
         // starting pos
         hood.setPosition(hoodCpos = 0);
         pivot.setPosition(pivotCpos = 0.1);

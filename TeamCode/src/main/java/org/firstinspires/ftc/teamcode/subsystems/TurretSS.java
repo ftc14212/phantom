@@ -63,6 +63,7 @@ public class TurretSS extends SubsystemBase {
         this.servos = null;
         this.servo = servos;
         this.positional = true;
+        servo.setPosition(0);
         init(encoder, pidf, lastTurretPos);
     }
     private void init(DcMotorEx encoder, Tune.PIDF pidf, double lastTurretPos) {
@@ -107,7 +108,10 @@ public class TurretSS extends SubsystemBase {
             rawPower = Math.max(-1, Math.min(1, rawPower));
             // apply power
             servos.setPower(rawPower);
-        } else servo.setPosition(degreeToPos(profiledTarget));
+        } else {
+            if (servo.getPosition() == 0) servo.setPosition(Math.round(degreeToPos(target) * 10.0) / 10.0);
+            else servo.setPosition(degreeToPos(target));
+        }
     }
     private double alignAngle() {
         double dx = targetPos.getX() - follower.getPose().getX();

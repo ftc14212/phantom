@@ -111,7 +111,7 @@ public class MainV3 extends OpMode {
     CombinedServo hood; // 2x axon mini
     CachingServo led; // 2x gobilda led lights RGB
     CachingServo strips; // 4x gobilda strip RGB lights
-    CombinedCRServo turret; // 2x axon mini
+    CombinedServo turret; // 2x axon mini
     // random
     MainV1E.Alliance alliance;
     MainV1E.StartPos startPos;
@@ -152,9 +152,9 @@ public class MainV3 extends OpMode {
         CachingServo hoodR = new CachingServo(hardwareMap.get(Servo.class, "hoodR")); // 1x axon mini
         CachingServo hoodL = new CachingServo(hardwareMap.get(Servo.class, "hoodL")); // 1x axon mini
         hood = new CombinedServo(hoodR, hoodL); // 2x axon minis
-        CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1")); // 1x axon mini
-        CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2")); // 1x axon mini
-        turret = new CombinedCRServo(turret1, turret2); // 2x axon minis
+        CachingServo turret1 = new CachingServo(hardwareMap.get(Servo.class, "turret1")); // 1x axon mini
+        CachingServo turret2 = new CachingServo(hardwareMap.get(Servo.class, "turret2")); // 1x axon mini
+        turret = new CombinedServo(turret2, turret1); // 2x axon minis
         led = new CachingServo(hardwareMap.get(Servo.class, "led")); // 2x gobilda led lights RGB
         strips = new CachingServo(hardwareMap.get(Servo.class, "strips")); // 4x gobilda strip RGB lights
         stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini

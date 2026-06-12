@@ -419,17 +419,18 @@ public class MainV3 extends OpMode {
     public static InterpLUT getShooterLUT() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(26, 1750); // 50
-        lut.add(30, 1800); // 25
-        lut.add(35, 1825); // 50
-        lut.add(40, 1875); // 25
-        lut.add(45, 2000); // 75
-        lut.add(50, 1975); // 15
-        lut.add(55, 1990); // 25
-        lut.add(60, 2015); // 175
-        lut.add(65, 2053);
-        lut.add(70, 2100);
-        lut.add(75, 2140);
+        lut.add(20, 1650);
+        lut.add(25, 1680);
+        lut.add(30, 1700);
+        lut.add(35, 1720);
+        lut.add(40, 1740);
+        lut.add(45, 1760);
+        lut.add(50, 1800);
+        lut.add(55, 1840);
+        lut.add(60, 0);
+        lut.add(65, 0);
+        lut.add(70, 0);
+        lut.add(75, 0);
         // finish
         lut.createLUT();
         return lut;
@@ -437,17 +438,18 @@ public class MainV3 extends OpMode {
     public static InterpLUT getHoodLut() {
         InterpLUT lut = new InterpLUT();
         // add the data
-        lut.add(26, 0.0);
-        lut.add(30, 0.0);
+        lut.add(20, 0.0);
+        lut.add(25, 0.15);
+        lut.add(30, 0.15);
         lut.add(35, 0.2);
-        lut.add(40, 0.2);
-        lut.add(45, 0.15);
-        lut.add(50, 0.23);
-        lut.add(55, 0.27);
-        lut.add(60, 0.27);
-        lut.add(65, 0.3);
-        lut.add(70, 0.3);
-        lut.add(75, 0.33);
+        lut.add(40, 0.23);
+        lut.add(45, 0.25);
+        lut.add(50, 0.25);
+        lut.add(55, 0.25);
+        lut.add(60, 0.);
+        lut.add(65, 0.);
+        lut.add(70, 0.);
+        lut.add(75, 0.);
         // finish
         lut.createLUT();
         return lut;

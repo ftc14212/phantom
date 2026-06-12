@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.testCode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.gamepad.PanelsGamepad;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.bylazar.configurables.annotations.Configurable;
@@ -36,9 +38,7 @@ public class measureShooter extends LinearOpMode {
     @Override
     public void runOpMode() {
         // hardware
-        PIDController turretPID = new PIDController(Math.sqrt(PIDDualTuneTurret.FAR.P), PIDDualTuneTurret.FAR.I, PIDDualTuneTurret.FAR.D);
         TelemetryM telemetryM = new TelemetryM(telemetry, debugMode);
-        Follower follower = Constants.createFollower(hardwareMap);
         // motors
         CachingDcMotorEx shooterL = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterL")); // 6000 rpm
         CachingDcMotorEx shooterR = new CachingDcMotorEx(hardwareMap.get(DcMotorEx.class, "shooterR")); // 6000 rpm
@@ -48,9 +48,6 @@ public class measureShooter extends LinearOpMode {
         CachingServo hoodR = new CachingServo(hardwareMap.get(Servo.class, "hoodR")); // 1x axon mini
         CachingServo hoodL = new CachingServo(hardwareMap.get(Servo.class, "hoodL")); // 1x axon mini
         CombinedServo hood = new CombinedServo(hoodR, hoodL); // 2x axon minis
-        CachingCRServo turret1 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret1")); // 1x axon mini
-        CachingCRServo turret2 = new CachingCRServo(hardwareMap.get(CRServo.class, "turret2")); // 1x axon mini
-        CombinedCRServo turret = new CombinedCRServo(turret1, turret2); // 2x axon minis
         CachingServo stopper = new CachingServo(hardwareMap.get(Servo.class, "stopper")); // 1x axon mini
         CachingServo pivot = new CachingServo(hardwareMap.get(Servo.class, "pivot")); // 1x axon max
         // limits
@@ -64,7 +61,6 @@ public class measureShooter extends LinearOpMode {
         gamepad1.setLedColor(0, 255, 255, -1);
         gamepad2.setLedColor(0, 255, 0, -1);
         hardwareMap.get(IMU.class, "imu").resetYaw();
-        // TurretSS_OLD turretSS = new TurretSS_OLD(turretPID, PIDTuneTurret.FAR.F, turret, indexer, PIDTuneTurret.TPR, PIDTuneTurret.ratio, MainV2.turretOffsetB, MainV1E.lastTurretPos);
         // telemetry
         telemetryM.addLine("Metrobotics Team 14212!");
         telemetryM.addLine(true, "INIT DONE!");
@@ -74,12 +70,6 @@ public class measureShooter extends LinearOpMode {
             while (opModeIsActive()) {
                 if(gamepad1.left_bumper) stopper.setPosition(0);
                 else stopper.setPosition(0.5);
-                /*
-                turretSS.updatePID(turretPID, PIDTuneTurret.FAR.F);
-                turretSS.setTurretOffset(MainV2.turretOffsetB);
-                turretSS.updateTurretTpos(turretTpos);
-                turretSS.update(follower);
-                 */
                 shooterL.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
                 shooterR.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
                 indexer.setPower(turnOn ? indexerSpeed : 0);

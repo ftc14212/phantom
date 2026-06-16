@@ -98,8 +98,7 @@ public class ShooterSS extends SubsystemBase {
             distSOTM = sotm.computeCompensatedDistance(follower.getPose(), targetPos) + offset;
             // shooter code
             hood.setPosition(hoodCpos);
-            if(idle > 0 && target == idle && motors.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.FLOAT && motors.getVelocity() > idle + 100) motors.setPower(0); 
-            else motors.setVelocity(target);
+            motors.setVelocity(target);
         } else {
             motors.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motors.setVelocity(0);

@@ -3,10 +3,9 @@
  * @author David Grieas - 14212 MetroBotics
  * coding for qualifier 2 - dec 6th
  * started coding at 11/1/25  @  6:15 pm
-***/
+ ***/
 package org.firstinspires.ftc.teamcode.teleOp;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -41,9 +40,8 @@ import dev.frozenmilk.dairy.cachinghardware.CachingCRServo;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
-@Config
 @Configurable
-@TeleOp(name="Main v1", group="old_ftc14212")
+@TeleOp(name="Main v1", group=".ftc14212")
 public class MainV1 extends OpMode {
     /**
      * MAIN V1 BY DAVID
@@ -76,7 +74,7 @@ public class MainV1 extends OpMode {
     public static boolean debugMode = true;
     public static double wheelSpeedMax = 1;
     public static double turretOffset = 0;
-    public static boolean turretOn = true;
+    public static boolean turretOn = false;
     public static double backSpin = 0;
     public static double shooterOffset = -18;
 
@@ -190,11 +188,11 @@ public class MainV1 extends OpMode {
         MainV1E.Alliance alliance = prompter.get("alliance");
         MainV1E.StartPos startPos = prompter.get("start_pos");
         if (startPos == MainV1E.StartPos.FAR) {
-            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(87.5, 8.3, Math.toRadians(90)));
-            if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(new Pose(56.5, 8.3, Math.toRadians(90)));
+            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(89.4, 7.8, Math.toRadians(90)));
+            if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(new Pose(54.6, 7.8, Math.toRadians(90)));
         }
         if (startPos == MainV1E.StartPos.CLOSE) {
-            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(126, 8.3, Math.PI - Math.toRadians(144)));
+            if (alliance == MainV1E.Alliance.RED) follower.setStartingPose(new Pose(126, 119, Math.PI - Math.toRadians(144)));
             if (alliance == MainV1E.Alliance.BLUE) follower.setStartingPose(new Pose(18, 119, Math.toRadians(144)));
         }
         redSide = alliance == MainV1E.Alliance.RED;
@@ -218,8 +216,8 @@ public class MainV1 extends OpMode {
     @Override
     public void loop() {
         // poses
-        Pose bluePos = new Pose(11, 137, Math.toRadians(blueShooter));
-        Pose redPos = new Pose(133, 137, Math.toRadians(redShooter));
+        Pose bluePos = new Pose(6, 138); // BYE
+        Pose redPos = new Pose(138, 138);
         Pose target = redSide ? redPos : bluePos;
         // variables
         telemetryM.setDebug(debugMode);
@@ -269,7 +267,7 @@ public class MainV1 extends OpMode {
             rightRear.setPower(rightBackPower);
         } else {
             follower.setMaxPower(wheelSpeed);
-            follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+            follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, ALIGN_SHOOT ? -gamepad1.right_stick_x * 0.3 : -gamepad1.right_stick_x, true);
         }
         // controls
         if (INTAKE) {
@@ -395,7 +393,7 @@ public class MainV1 extends OpMode {
         lut.add(135, 1360);
         // finish
         lut.createLUT();
-        return lut.get(Math.max(15.1, Math.min(134.9, distShooter)));
+        return lut.get(Math.max(15.1, Math.min(124.9, distShooter)));
     }
     public double getHoodCpos(double distShooter) {
         InterpLUT lut = new InterpLUT();

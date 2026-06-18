@@ -96,9 +96,9 @@ public class auto extends OpMode {
     private double wheelSpeed = 1;
     public static boolean turretOn = true;
     boolean indexerOn = true;
-    public static double turretOffsetR = -8; // kabam
+    public static double turretOffsetR = 5; // kabam
     public static double turretOffsetB = 5; // kabam
-    public static double shooterOffset = -16;
+    public static double shooterOffset = -17.5;
     public static boolean debugMode = true;
     public static boolean redSide = false;
     public static int intakeWait = 1000;
@@ -203,6 +203,7 @@ public class auto extends OpMode {
                         follower.getPose(),
                         BC.shootClosePose
                 ))
+                .setBrakingStrength(0.5)
                 .setConstantHeadingInterpolation(BC.shootClosePose.getHeading())
                 .build();
         intakeClose = follower.pathBuilder()
@@ -246,14 +247,14 @@ public class auto extends OpMode {
     private void buildRedClose() {
         scoreClose = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        follower.getPose(),
+                        RC.startPose,
                         RC.shootClosePose
                 ))
                 .setConstantHeadingInterpolation(RC.shootClosePose.getHeading())
                 .build();
         intakeClose = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        follower.getPose(),
+                        RC.shootClosePose,
                         RC.intakeClosePose
                 ))
                 .setConstantHeadingInterpolation(RC.intakeClosePose.getHeading())
@@ -283,7 +284,7 @@ public class auto extends OpMode {
                 .build();
         park = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        follower.getPose(),
+                        RC.intakeFarPose,
                         RC.parkPose
                 ))
                 .setConstantHeadingInterpolation(RC.parkPose.getHeading())
@@ -305,8 +306,8 @@ public class auto extends OpMode {
                     shootCloseStarted = true;
                 }
                 if (shooterOn) shooterSS.align();
-                if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.shootClosePose, 8, 8)) reached2 = true;
-                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.shootClosePose, 8, 8)) reached2 = true;
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.shootClosePose, 4, 4)) reached2 = true;
+                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.shootClosePose, 4, 4)) reached2 = true;
                 if (reached2 && shootCloseStarted) {
                     if (turretOn) turretSS.align();
                     if (shooterSS.atTarget()) {
@@ -314,7 +315,7 @@ public class auto extends OpMode {
                             timer2.resetTimer();
                             ran2 = true;
                         }
-                        if (timer2.getElapsedTime() >= 650) {
+                        if (timer2.getElapsedTime() >= 750) {
                             if (!ran) {
                                 timer.resetTimer();  // check this line its sus
                                 FEED();
@@ -536,6 +537,7 @@ public class auto extends OpMode {
     }
     public void RESET_INTAKE() {
         pivotCpos = 0.1;
+        stopperCpos = 0.5;
         indexer.setPower(0);
         intake.setPower(0);
         shooterSS.reset();
@@ -634,6 +636,7 @@ public class auto extends OpMode {
         shooterSS = new ShooterSS(new CombinedDcMotorEx(shooterR, shooterL), hood, led, shooterPID);
         shooterSS.setPoses(MainV3.getShooterLUT(), 26.1, 64.9, MainV3.getHoodLut(), 26.1, 64.9);
         shooterSS.update(follower);
+        turretSS.update(follower);
     }
 
     public void onPromptsComplete() {
@@ -689,6 +692,7 @@ public class auto extends OpMode {
         // servos
         pivot.setPosition(pivotCpos);
         led.setPosition(ledCpos);
+        stopper.setPosition(stopperCpos);
         // shooter code
         shooterSS.update(follower);
         // turret code

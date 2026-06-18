@@ -13,6 +13,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -70,7 +71,7 @@ public class MainV3 extends OpMode {
     public static boolean shooterOn = true;
     boolean indexerOn = true;
     public static double idle = 900;
-    public static double transferDelay = 200;
+    public static double transferDelay = 250;
     boolean ran = false;
     // timers
     ElapsedTime loopTime;
@@ -80,9 +81,9 @@ public class MainV3 extends OpMode {
     // config stuff
     public static boolean redSide;
     public static boolean debugMode = false;
-    public static double turretOffsetR = 0;
+    public static double turretOffsetR = -8;
     public static double turretOffsetB = 0;
-    public static double shooterOffset = -16;
+    public static double shooterOffset = -17.5;
     private final Prompter prompter = new Prompter(this);
     // hardware
     private List<LynxModule> allHubs;
@@ -427,10 +428,11 @@ public class MainV3 extends OpMode {
         lut.add(45, 1760);
         lut.add(50, 1800);
         lut.add(55, 1840);
-        lut.add(60, 0);
-        lut.add(65, 0);
-        lut.add(70, 0);
-        lut.add(75, 0);
+        lut.add(60, 1860);
+        lut.add(65, 1880);
+        lut.add(70, 1920);
+        lut.add(75, 1940);
+        lut.add(80, 1980);
         // finish
         lut.createLUT();
         return lut;
@@ -446,10 +448,11 @@ public class MainV3 extends OpMode {
         lut.add(45, 0.25);
         lut.add(50, 0.25);
         lut.add(55, 0.25);
-        lut.add(60, 0.);
-        lut.add(65, 0.);
-        lut.add(70, 0.);
-        lut.add(75, 0.);
+        lut.add(60, 0.2);
+        lut.add(65, 0.23);
+        lut.add(70, 0.23);
+        lut.add(75, 0.25);
+        lut.add(80, 0.28);
         // finish
         lut.createLUT();
         return lut;

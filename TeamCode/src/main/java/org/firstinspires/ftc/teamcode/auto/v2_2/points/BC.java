@@ -8,6 +8,8 @@ public class BC {
     public static final Pose intakeClosePose = new Pose(17.5, 83.4, Math.toRadians(180));
     public static final Pose intakeMidPose = new Pose(22, 59, Math.toRadians(180));
     public static final Pose intakeMidControlPose = new Pose(60, 56, Math.toRadians(180));
+    public static final Pose gatePose = new Pose(22, 62, Math.toRadians(180));
+    public static final Pose gateControlPose = new Pose(32, 61, Math.toRadians(180));
     public static final Pose intakeFarPose = new Pose(20, 35, Math.toRadians(180));
     public static final Pose intakeFarControlPose = new Pose(68, 27, Math.toRadians(180));
     public static final Pose intakeGatePose = new Pose(13, 60, Math.toRadians(151));

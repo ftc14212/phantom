@@ -135,6 +135,7 @@ public class auton extends OpMode {
     private PathChain intake1, scoreFar1, grabBalls, scoreFar2, intake2, lever, scoreClose1, intake3, scoreClose2;
     // blue far
     public static final Pose startPoseBF = new Pose(56.5, 8.39, Math.toRadians(180));
+    public static final Pose parkPoseBFF = new Pose(36, 11, Math.toRadians(180));
     public static final Pose intakeStart1PoseBF = new Pose(46, 31, Math.toRadians(180));
     public static final Pose intakeEnd1PoseBF = new Pose(19.5, 34, Math.toRadians(180));
     public static final Pose shootFarPoseBF = new Pose(55.5, 13.36, Math.toRadians(180));
@@ -150,6 +151,7 @@ public class auton extends OpMode {
     public static final Pose parkPoseBF = new Pose(51, 73.5, Math.toRadians(180));
     // red far
     public static final Pose startPoseRF = startPoseBF.mirror();
+    public static final Pose parkPoseRFF = parkPoseBFF.mirror();
     public static final Pose intakeStart1PoseRF = intakeStart1PoseBF.mirror();
     public static final Pose intakeEnd1PoseRF = intakeEnd1PoseBF.mirror();
     public static final Pose shootFarPoseRF = shootFarPoseBF.mirror();
@@ -285,6 +287,7 @@ public class auton extends OpMode {
                 .build();
     }
     private void buildBlueFar() {
+        /*
         intake1 = follower.pathBuilder()
                 .addPath(new BezierLine(startPoseBF, intakeStart1PoseBF))
                 .setConstantHeadingInterpolation(intakeStart1PoseBF.getHeading())
@@ -336,12 +339,14 @@ public class auton extends OpMode {
                 .addPath(new BezierLine(intakeEnd3PoseBF, shootClosePoseBF))
                 .setConstantHeadingInterpolation(shootClosePoseBF.getHeading())
                 .build();
+         */
         park = follower.pathBuilder()
-                .addPath(new BezierLine(shootClosePoseBF, parkPoseBF))
-                .setConstantHeadingInterpolation(parkPoseBF.getHeading())
+                .addPath(new BezierLine(startPoseBF, parkPoseBFF))
+                .setConstantHeadingInterpolation(parkPoseBFF.getHeading())
                 .build();
     }
     private void buildRedFar() {
+        /*
         intake1 = follower.pathBuilder()
                 .addPath(new BezierLine(startPoseRF, intakeStart1PoseRF))
                 .setConstantHeadingInterpolation(intakeStart1PoseRF.getHeading())
@@ -393,9 +398,10 @@ public class auton extends OpMode {
                 .addPath(new BezierLine(intakeEnd3PoseRF, shootClosePoseRF))
                 .setConstantHeadingInterpolation(shootClosePoseRF.getHeading())
                 .build();
+        */
         park = follower.pathBuilder()
-                .addPath(new BezierLine(shootClosePoseRF, parkPoseRF))
-                .setConstantHeadingInterpolation(parkPoseRF.getHeading())
+                .addPath(new BezierLine(startPoseRF, parkPoseRFF))
+                .setConstantHeadingInterpolation(parkPoseRFF.getHeading())
                 .build();
     }
 
@@ -638,6 +644,11 @@ public class auton extends OpMode {
     public void farStates() {
         switch (pathState) {
             case 0:
+                follower.followPath(park, true);
+                setPathState(-1);
+                break;
+                /*
+            case 0:
                 if (!intake1Started) {
                     turretTpos = redSide ? 67 : -67;
                     shootFar = true;
@@ -678,6 +689,7 @@ public class auton extends OpMode {
                     }
                 }
                 break;
+                 */
             case 1:
                 if (!shootFar1Started) {
                     follower.followPath(scoreFar1, true);

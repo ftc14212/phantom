@@ -82,7 +82,7 @@ public class MainV3 extends OpMode {
     public static boolean redSide;
     public static boolean debugMode = false;
     public static double turretOffsetR = -8;
-    public static double turretOffsetB = 0;
+    public static double turretOffsetB = -5;
     public static double shooterOffset = -17.5;
     private final Prompter prompter = new Prompter(this);
     // hardware
@@ -281,7 +281,7 @@ public class MainV3 extends OpMode {
         boolean FEED = gamepad1.right_bumper || gamepad2.right_bumper;
         boolean ALIGN_SHOOT = gamepad1.left_bumper || gamepad2.left_bumper;
         boolean RESET_SHOOTER_TURRET = (!currentGamepad1.left_bumper && previousGamepad1.left_bumper) || (!currentGamepad2.left_bumper && previousGamepad2.left_bumper);
-        boolean RESET_INTAKE = (!currentGamepad1.right_bumper && previousGamepad1.right_bumper) || gamepad1.dpadRightWasReleased() || (!(currentGamepad1.right_trigger > 0.1) && previousGamepad1.right_trigger > 0.1) || (!(currentGamepad1.left_trigger > 0.1) && previousGamepad1.left_trigger > 0.1);
+        boolean RESET_INTAKE = (!currentGamepad1.right_bumper && previousGamepad1.right_bumper) || (!currentGamepad2.right_bumper && previousGamepad2.right_bumper) || gamepad1.dpadRightWasReleased() || (!(currentGamepad1.right_trigger > 0.1) && previousGamepad1.right_trigger > 0.1) || (!(currentGamepad1.left_trigger > 0.1) && previousGamepad1.left_trigger > 0.1);
         // gamepad stuff
         previousGamepad1.copy(currentGamepad1);
         previousGamepad2.copy(currentGamepad2);
@@ -376,15 +376,15 @@ public class MainV3 extends OpMode {
             shooterSS.reset();
         }
         // fixes
-        if (gamepad1.dpadRightWasPressed()) {
+        if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) {
             turretOffsetR += 1;
             turretOffsetB += 1;
         }
-        if (gamepad1.dpadLeftWasPressed()) {
+        if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) {
             turretOffsetR -= 1;
             turretOffsetB -= 1;
         }
-        if (gamepad1.dpadDownWasReleased()) {
+        if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) {
             if (redSide) follower.setPose(new Pose(126, 119, Math.PI - Math.toRadians(144)));
             else follower.setPose(new Pose(18, 119, Math.toRadians(144)));
         }

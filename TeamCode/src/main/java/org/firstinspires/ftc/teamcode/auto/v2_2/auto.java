@@ -11,8 +11,9 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.ColorRangeSensor;
+import com.qualcomm.robotcore.hardware.ColorRangeSensor;// david is big for eati g so ,ich pizza
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -49,6 +50,7 @@ import org.firstinspires.ftc.teamcode.vars.MainV1E;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 
+// @Disabled iza is the best coder ever
 @Config
 @Configurable
 @Autonomous(name = "auto", group = ".ftc14212")
@@ -76,7 +78,7 @@ public class auto extends OpMode {
     CombinedServo hood; // 2x axon mini
     CachingServo led; // 2x gobilda led lights RGB
     CachingServo strips; // 4x gobilda strip RGB lights
-    CombinedServo turret; // 2x axon mini
+    CombinedServo turret; // 2x axon minimoni
     // pids
     PIDController turretPID;
     PIDFCoefficients shooterPID;
@@ -97,7 +99,7 @@ public class auto extends OpMode {
     public static boolean turretOn = true;
     boolean indexerOn = true;
     public static double turretOffsetR = 5; // kabam
-    public static double turretOffsetB = 5; // kabam
+    public static double turretOffsetB = 5; // kabamkavhow
     public static double shooterOffset = -17.5;
     public static boolean debugMode = true;
     public static boolean redSide = false;
@@ -122,7 +124,7 @@ public class auto extends OpMode {
     boolean gate = false;
     boolean humanPlayer = false;
     // close
-    private PathChain scoreClose, intakeClose, intakeMid, intakeFar, intakeGate, park;
+    private PathChain scoreClose, intakeClose, intakeMid, gateOpen, intakeFar, intakeGate, park;
     // close
     boolean shootCloseStarted = false;
     boolean intakeCloseStarted = false;
@@ -221,6 +223,14 @@ public class auto extends OpMode {
                 ))
                 .setConstantHeadingInterpolation(BC.intakeMidPose.getHeading())
                 .build();
+        gateOpen = follower.pathBuilder()
+                .addPath(new BezierCurve(
+                        BC.intakeMidPose,
+                        BC.gateControlPose,
+                        BC.gatePose
+                ))
+                .setConstantHeadingInterpolation(BC.gatePose.getHeading())
+                .build();
         intakeFar = follower.pathBuilder()
                 .addPath(new BezierCurve(
                         BC.shootClosePose,
@@ -315,7 +325,7 @@ public class auto extends OpMode {
                             timer2.resetTimer();
                             ran2 = true;
                         }
-                        if (timer2.getElapsedTime() >= 750) {
+                        if (timer2.getElapsedTime() >= 1010) {
                             if (!ran) {
                                 timer.resetTimer();  // check this line its sus
                                 FEED();
@@ -335,8 +345,8 @@ public class auto extends OpMode {
                             else if (!intakedFar) setPathState(3);
                             else if (matchTime.isLessThan(3)) setPathState(5);
                         } else {
-                            if (!intakedClose) setPathState(1);
-                            else if (!intakedMid) setPathState(2);
+                            if (!intakedMid) setPathState(2);
+                            else if (!intakedClose) setPathState(1);
                             else if (!intakedFar) setPathState(3);
                             else setPathState(5);
                         }
@@ -388,6 +398,22 @@ public class auto extends OpMode {
                     ran = false;
                     ran2 = false;
                     intakedMid = true;
+                    setPathState(0);
+                } else INTAKE();
+                break;
+            case 999:
+                follower.followPath(gateOpen, true);
+                if (alliance == MainV1E.Alliance.RED && follower.atPose(RC.intakeMidPose, 5, 5)) reached = true;
+                if (alliance == MainV1E.Alliance.BLUE && follower.atPose(BC.gatePose, 5, 5)) reached = true;
+                if (reached && !ran2) {
+                    timer.resetTimer();
+                    ran2 = true;
+                }
+                if (ran2 && timer.getElapsedTime() >= intakeWait) {
+                    wheelSpeed = 1;
+                    RESET_INTAKE();
+                    ran = false;
+                    ran2 = false;
                     setPathState(0);
                 } else INTAKE();
                 break;

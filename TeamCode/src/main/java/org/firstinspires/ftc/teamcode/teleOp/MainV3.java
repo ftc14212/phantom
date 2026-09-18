@@ -70,7 +70,7 @@ public class MainV3 extends OpMode {
     public static boolean turretOn = true;
     public static boolean shooterOn = true;
     boolean indexerOn = true;
-    public static double idle = 900;
+    public static double idle = 1300;
     public static double transferDelay = 250;
     boolean ran = false;
     // timers
@@ -314,14 +314,13 @@ public class MainV3 extends OpMode {
             rightRear.setPower(rightBackPower);
         } else {
             follower.setMaxPower(wheelSpeed);
-            follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+            follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x * (ALIGN_SHOOT ? 0.8 : 1), -gamepad1.right_stick_x * (ALIGN_SHOOT ? 0.5 : 1), true);
         }
         // controls
         if (INTAKE) {
             pivotCpos = 0.15;
             stopperCpos = 0.5;
             if (indexerOn) indexer.setPower(0.9);
-            intake.setPower(1);
             if (!beams.getState()) {
                 if (!ran) {
                     transfer.reset();
@@ -334,6 +333,9 @@ public class MainV3 extends OpMode {
             }
             if (!beams.getState() && c2.getDistance(DistanceUnit.CM) < 10 && c1.getDistance(DistanceUnit.CM) < 10)  {
                 shooterSS.setLeds(0.667);
+                intake.setPower(0);
+            } else {
+                intake.setPower(1);
             }
         }
         if (OUTTAKE) {
@@ -428,10 +430,10 @@ public class MainV3 extends OpMode {
         lut.add(45, 1760);
         lut.add(50, 1800);
         lut.add(55, 1840);
-        lut.add(60, 1860);
-        lut.add(65, 1880);
-        lut.add(70, 1920);
-        lut.add(75, 1940);
+        lut.add(60, 2020);
+        lut.add(65, 2120);
+        lut.add(70, 2020);
+        lut.add(75, 2020);
         lut.add(80, 1980);
         // finish
         lut.createLUT();
@@ -448,10 +450,10 @@ public class MainV3 extends OpMode {
         lut.add(45, 0.25);
         lut.add(50, 0.25);
         lut.add(55, 0.25);
-        lut.add(60, 0.2);
-        lut.add(65, 0.23);
-        lut.add(70, 0.23);
-        lut.add(75, 0.25);
+        lut.add(60, 0.5);
+        lut.add(65, 0.5);
+        lut.add(70, 0.3);
+        lut.add(75, 0.28);
         lut.add(80, 0.28);
         // finish
         lut.createLUT();

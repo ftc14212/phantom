@@ -30,7 +30,8 @@ import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 @TeleOp(name = "measureShooter", group = "test_ftc14212")
 public class measureShooter extends LinearOpMode {
     boolean debugMode = true;
-    public static boolean turnOn = false;
+    public static boolean intakeOn = false;
+    public static boolean shooterOn = false;
     public static int shooterVelo = 0;
     public static double hoodCpos = 0;
     public static double turretTpos = 0;
@@ -70,14 +71,16 @@ public class measureShooter extends LinearOpMode {
             while (opModeIsActive()) {
                 if(gamepad1.left_bumper) stopper.setPosition(0);
                 else stopper.setPosition(0.5);
+                if(gamepad1.yWasPressed()) intakeOn = !intakeOn;
+                if(gamepad1.bWasPressed()) shooterOn = !shooterOn;
                 shooterL.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
                 shooterR.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PIDTuneShooterSdk.P,PIDTuneShooterSdk.I,PIDTuneShooterSdk.D,PIDTuneShooterSdk.F));
-                indexer.setPower(turnOn ? indexerSpeed : 0);
-                intake.setPower(turnOn ? indexerSpeed : 0);
+                indexer.setPower(intakeOn ? indexerSpeed : 0);
+                intake.setPower(intakeOn ? indexerSpeed : 0);
                 hood.setPosition(hoodCpos);
                 pivot.setPosition(0.06);
-                shooterR.setVelocity(turnOn ? shooterVelo : 0); // leader
-                shooterL.setVelocity(turnOn ? shooterVelo : 0); // follower
+                shooterR.setVelocity(shooterOn ? shooterVelo : 0); // leader
+                shooterL.setVelocity(shooterOn ? shooterVelo : 0); // follower
                 telemetryM.update();
             }
         }
